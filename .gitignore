@@ -1,0 +1,59 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+.lighthouseci
+dist
+# Generated build artifact from scripts/snapshot-content.ts
+/content/
+
+# Node dependencies
+node_modules
+/package-lock.json
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+# SOPS-encrypted env files are safe to commit (values are AES-encrypted via
+# age recipients). Keep the `.sops.yaml` / `.sops.yml` files tracked; the
+# blanket `.env.*` rule above would otherwise hide them.
+!.env*.sops.yaml
+!.env*.sops.yml
+
+# Vitest coverage output (generated locally and in CI, no need to ship in repo)
+coverage/
+
+# Firebase
+.firebase
+scripts/service-account.json
+
+# Cloudflare Wrangler local state (wrangler dev)
+.wrangler/
+
+# Serena
+.serena
+
+# Local Netlify folder
+.netlify
+.superpowers/
+.claude/
+.todos/
+
+brand.zip
+brand-extracted/
+
+# Node's local compile cache (NODE_COMPILE_CACHE) — auto-created when
+# running scripts under Node 22+ with --experimental-compile-cache or
+# implicit cache via package.json. Not source.
+node-compile-cache/

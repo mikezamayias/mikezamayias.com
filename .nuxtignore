@@ -1,0 +1,15 @@
+.claude/
+.firebase/
+.fleet/
+.git/
+.idea/
+.lighthouseci/
+.netlify/
+.nuxt/
+.output/
+.playwright-mcp/
+.serena/
+.superpowers/
+.todos/
+.vscode/
+coverage/

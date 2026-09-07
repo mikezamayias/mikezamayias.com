@@ -1,0 +1,46 @@
+# Security headers and caching rules for static assets, applied by Cloudflare Workers Static Assets.
+#
+# These used to come from nuxt-security and firebase.json at runtime. The site is now
+# served as static assets by the Worker, so Nitro never runs and none of its response
+# headers ship. Measured on production before this file existed: strict-transport-security
+# was the only security header present, and every content-hashed asset was revalidated
+# on every page load with max-age=0.
+#
+# The Content-Security-Policy here deliberately carries ONLY frame-ancestors. The
+# full policy still ships as a <meta> tag per page (nuxt-security `ssg.meta`), and
+# its script-src hashes differ per page - the home page has 15, /work has 11. A
+# single header policy would need the union of every page's hashes and would render
+# any page outside that union blank. Browsers enforce multiple CSPs independently,
+# so the meta policy and this one compose: meta governs scripts and styles,
+# this governs framing, which meta cannot express at all.
+#
+# Strict-Transport-Security is deliberately absent: it is already served on every
+# response and is owned by the Cloudflare zone, not by this file.
+#
+# Caching:
+# - /* (HTML and general assets): max-age=0, must-revalidate keeps HTML freshly revalidated
+#   on every request. Publishing is a rebuild, so a non-zero HTML cache duration would delay
+#   every publish by that duration.
+# - /_nuxt/* (content-hashed chunks): safe to cache forever (max-age=31536000, immutable)
+#   because the filename changes whenever the content changes.
+# - no-transform is set on both rules. Beyond preventing proxy transformation, it stops
+#   Cloudflare from injecting scripts (e.g. Rocket Loader). Injected inline scripts lack the
+#   per-page hash in the <meta> CSP, causing CSP violations and rendering the page blank.
+# - Cloudflare's _headers implementation combines headers from all matching rules with commas.
+#   Since both /* and /_nuxt/* match /_nuxt assets, defining Cache-Control in both produces
+#   conflicting comma-separated directives (max-age=0, ..., max-age=31536000), causing clients
+#   to honor the more restrictive max-age=0. Prepending `! Cache-Control` in /_nuxt/* detaches
+#   the inherited Cache-Control from /* so only the immutable policy applies, while preserving
+#   the inherited security headers (e.g. X-Frame-Options).
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: frame-ancestors 'none'
+  Cache-Control: public, max-age=0, must-revalidate, no-transform
+
+/_nuxt/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable, no-transform

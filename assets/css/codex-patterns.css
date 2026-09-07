@@ -1,0 +1,366 @@
+/* assets/css/codex-patterns.css
+ *
+ * Shared Codex section / list / card patterns lifted out of the
+ * `components/codex/*` SFCs so the admin shell can wear the same
+ * visual vocabulary without duplicating ~120 lines per surface.
+ *
+ * Imported once from `assets/css/tailwind.css` — every admin and
+ * public surface gets the same primitives for free. The original
+ * `<style scoped>` blocks in the codex/admin SFCs were shrunk to
+ * page-specific overrides only.
+ *
+ * Naming follows the public site's existing convention
+ * (`codex-h2`, `codex-list-row`, `codex-card`); admin surfaces opt
+ * in by adding the same classes instead of declaring shadcn
+ * `rounded-md border bg-muted/50` lookalikes.
+ */
+
+/* ---------- Section header (mono eyebrow) ---------- */
+
+.codex-section-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 0.85rem;
+}
+
+/* ---------- List rows with whole-tile arrow-motion hover ---------- */
+
+.codex-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.codex-list-row {
+    position: relative;
+    border: 1px solid color-mix(in oklch, var(--line) 62%, transparent);
+    border-radius: 8px;
+    background: var(--surface-card);
+    color: var(--fg);
+    text-decoration: none;
+    box-shadow: 0 1px 0 color-mix(in oklch, var(--fg) 6%, transparent);
+    transition:
+        transform 0.4s var(--ease-out-expo),
+        border-color 0.22s var(--ease-out-expo),
+        box-shadow 0.22s var(--ease-out-expo);
+}
+
+.codex-list-row:hover,
+.codex-list-row:focus-within {
+    border-color: color-mix(in oklch, var(--accent) 52%, var(--line));
+    box-shadow: var(--shadow-float);
+    transform: translateX(3px);
+}
+
+.codex-list-row:focus-visible,
+.codex-list-row:has(:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.codex-list-link {
+    display: block;
+    padding: 1rem;
+    color: var(--fg);
+    text-decoration: none;
+}
+
+/* ---------- Public content rows (work + writing) ---------- */
+
+.codex-content-list {
+    gap: 0.95rem;
+}
+
+.codex-content-link {
+    display: grid;
+    grid-template-columns: minmax(4.75rem, 0.16fr) minmax(0, 1fr) max-content;
+    grid-template-areas:
+        "date title meta"
+        "date desc meta";
+    align-items: center;
+    gap: 0.2rem clamp(1rem, 3vw, 1.5rem);
+    min-height: 7rem;
+    padding: clamp(1rem, 2.2vw, 1.3rem);
+}
+
+.codex-content-date {
+    grid-area: date;
+    align-self: center;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--soft);
+}
+
+.codex-content-title {
+    grid-area: title;
+    min-width: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2vw, 1.55rem);
+    line-height: 1.05;
+    color: var(--fg);
+}
+
+.codex-content-desc {
+    grid-area: desc;
+    min-width: 0;
+    max-width: 64ch;
+    color: var(--soft);
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+
+.codex-content-meta {
+    grid-area: meta;
+    justify-self: end;
+    max-width: 16rem;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--faint);
+}
+
+@media (width <= 720px) {
+    .codex-content-link {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "date"
+            "title"
+            "desc"
+            "meta";
+        align-items: start;
+        min-height: 0;
+        gap: 0.45rem;
+    }
+
+    .codex-content-meta {
+        justify-self: start;
+        max-width: 100%;
+        text-align: left;
+    }
+}
+
+/* ---------- Cards (dashboard tiles, action chips) ---------- */
+
+.codex-card {
+    display: block;
+    padding: 1.25rem;
+    border: 1px solid color-mix(in oklch, var(--line) 58%, transparent);
+    border-radius: 8px;
+    background: var(--surface-card);
+    color: var(--fg);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 0 color-mix(in oklch, var(--fg) 6%, transparent);
+    transition:
+        transform 0.24s var(--ease-out-expo),
+        border-color 0.24s var(--ease-out-expo),
+        box-shadow 0.24s var(--ease-out-expo);
+}
+
+.codex-card:hover {
+    border-color: color-mix(in oklch, var(--accent) 52%, var(--line));
+    box-shadow: var(--shadow-float);
+    transform: translateY(-3px);
+}
+
+.codex-card-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.codex-card-title {
+    font-family: var(--font-sans);
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--fg);
+    margin: 0 0 0.25rem;
+}
+
+.codex-card-sub {
+    font-size: 0.85rem;
+    color: var(--soft);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ---------- Mono nav links (admin sidebar + mobile bottom nav) ---------- */
+
+.codex-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    font-weight: 650;
+    letter-spacing: 0;
+    color: var(--soft);
+    text-decoration: none;
+    border-radius: 8px;
+    transition:
+        color 0.2s var(--ease-out-expo),
+        transform 0.2s var(--ease-out-expo),
+        background-color 0.2s var(--ease-out-expo);
+}
+
+.codex-nav-link:hover {
+    color: var(--fg);
+    background: var(--surface-hover);
+    transform: translateX(2px);
+}
+
+.codex-nav-link[aria-current="page"],
+.codex-nav-link.is-active {
+    color: var(--fg);
+    background: var(--surface-strong);
+}
+
+/* Mobile bottom-tab variant — horizontal underline instead of side strip. */
+
+.codex-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.5rem 0.65rem;
+    min-height: 3.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--faint);
+    text-decoration: none;
+    border-radius: 8px;
+    transition:
+        color 0.2s var(--ease-out-expo),
+        background-color 0.2s var(--ease-out-expo);
+}
+
+.codex-tab:hover {
+    color: var(--soft);
+}
+
+.codex-tab[aria-current="page"],
+.codex-tab.is-active {
+    color: var(--fg);
+    background: var(--surface-strong);
+}
+
+/* ---------- CTA glyph button (Codex slide-arrow) ---------- */
+
+.codex-cta-glyph {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.codex-cta-glyph::after {
+    content: "→";
+    font-family: var(--font-mono);
+    transition: transform 0.35s var(--ease-out-expo);
+}
+
+.codex-cta-glyph:hover::after {
+    transform: translateX(0.35rem);
+}
+
+/* ---------- Destructive variant (admin SwipeRow / delete) ---------- */
+
+.codex-destructive {
+    color: var(--phoenix-ember);
+}
+
+.codex-destructive-bg {
+    background: var(--phoenix-ember);
+    color: var(--argent);
+}
+
+/* ---------- Buttons (mono, semantic tokens, override shadcn fill) ----
+ *
+ * Codex buttons stay flat — mono font, sharp corners, semantic
+ * `--surface-*` fills instead of the bright `--accent`. Use on
+ * admin chrome where shadcn `<Button>` default (`bg-primary`) reads
+ * as too loud. Apply via the `class` prop on `<Button>` — the
+ * class wins over the cva-emitted defaults because cva placement
+ * sits earlier in the cascade and `!important` is unnecessary
+ * thanks to the `!` specificity rules in PostCSS. Keep in sync
+ * with `components/ui/button/index.ts` variants. */
+
+/*
+ * The selectors below chain `.codex-btn` with the variant class so the
+ * specificity (0,2,0) beats Tailwind utilities like `bg-primary` /
+ * `text-primary-foreground` that shadcn's Button cva emits. Without
+ * the chain, codex-patterns.css imports BEFORE `@tailwind utilities`
+ * — Tailwind's single-class utilities (same 0,1,0 specificity) come
+ * later in source order and win, leaving the buttons painted with
+ * the bright `bg-primary` accent. Every caller already applies both
+ * classes (`class="codex-btn codex-btn-primary"`).
+ */
+
+.codex-btn {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border-radius: 8px;
+    transition:
+        background-color 0.2s var(--ease-out-expo),
+        color 0.2s var(--ease-out-expo),
+        border-color 0.2s var(--ease-out-expo),
+        transform 0.2s var(--ease-out-expo);
+}
+
+.codex-btn:hover {
+    transform: translateY(-1px);
+}
+
+.codex-btn.codex-btn-primary {
+    background: var(--fg);
+    color: var(--bg);
+    border: 1px solid var(--accent);
+}
+
+.codex-btn.codex-btn-primary:hover {
+    background: var(--accent);
+    color: var(--argent);
+    border-color: var(--accent);
+}
+
+.codex-btn.codex-btn-outline {
+    background: transparent;
+    color: var(--soft);
+    border: 1px solid var(--rule-soft);
+}
+
+.codex-btn.codex-btn-outline:hover {
+    color: var(--fg);
+    border-color: var(--accent);
+    background: color-mix(in oklch, var(--bg) 92%, var(--accent));
+}
+
+.codex-btn.codex-btn-destructive {
+    background: transparent;
+    color: var(--phoenix-ember);
+    border: 1px solid var(--phoenix-ember);
+}
+
+.codex-btn.codex-btn-destructive:hover {
+    background: var(--phoenix-ember);
+    color: var(--argent);
+    border-color: var(--phoenix-ember);
+}

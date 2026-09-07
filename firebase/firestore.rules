@@ -1,0 +1,216 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: is the request authenticated as the configured admin?
+    //
+    // BOOTSTRAPPING NOTE: this helper reads /settings/main. That document
+    // is seeded by scripts/seed-firestore.ts (Task 12) which uses
+    // firebase-admin and BYPASSES these rules. After the seed runs once
+    // with ADMIN_UID set, admin client writes work normally. Until then,
+    // /settings/main may be missing and any admin client write will fail
+    // with PERMISSION_DENIED. Run the seed script as the first deploy
+    // action.
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/settings/main)
+        && request.auth.uid in get(/databases/$(database)/documents/settings/main).data.allowedAdminIds;
+    }
+
+    function isPublishedDoc() {
+      return resource.data.published == true
+        && (!('hidden' in resource.data) || resource.data.hidden == false);
+    }
+
+    function hasOnlyKeys(allowed) {
+      return request.resource.data.keys().hasOnly(allowed);
+    }
+
+    function hasOnlyAffectedKeys(allowed) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowed);
+    }
+
+    function hasValidUpdatedAtOnUpdate() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['updatedAt'])
+        || request.resource.data.updatedAt is timestamp;
+    }
+
+    function isValidSingletonCreate(name) {
+      return (name == 'hero' && hasOnlyKeys(['cycle', 'lede', 'meta', 'cta', 'id', 'createdAt', 'updatedAt']))
+          || (name == 'about' && hasOnlyKeys(['name', 'role', 'location', 'stacks', 'current', 'years', 'bio', 'intro', 'id', 'createdAt', 'updatedAt']))
+          || (name == 'roadmap' && hasOnlyKeys(['goal', 'target', 'intro', 'id', 'createdAt', 'updatedAt']));
+    }
+
+    function isValidSingletonUpdate(name) {
+      return (name == 'hero' && hasOnlyAffectedKeys(['cycle', 'lede', 'meta', 'cta', 'id', 'createdAt', 'updatedAt']))
+          || (name == 'about' && hasOnlyAffectedKeys(['name', 'role', 'location', 'stacks', 'current', 'years', 'bio', 'intro', 'id', 'createdAt', 'updatedAt']))
+          || (name == 'roadmap' && hasOnlyAffectedKeys(['goal', 'target', 'intro', 'id', 'createdAt', 'updatedAt']));
+    }
+
+    // Public collections. `allow list` requires the query to carry the
+    // visibility filter: referencing `resource.data` here forces the client
+    // to include the matching `where()` clause, or Firestore rejects the
+    // query. Rules are NOT filters — the per-doc `get` rule does not run
+    // during a list. `isAdmin()` bypasses the filter so the admin UI can
+    // list drafts.
+    match /work/{slug} {
+      allow get: if isPublishedDoc() || isAdmin();
+      allow list: if isAdmin() || (request.query.limit != null && request.query.limit <= 100 && resource.data.published == true);
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['slug', 'yr', 'stack', 'glyph', 'order', 'published', 'locales_available', 'locale', 'links', 'images', 'id', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['slug', 'yr', 'stack', 'glyph', 'order', 'published', 'locales_available', 'locale', 'links', 'images', 'id', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+
+    match /writing/{slug} {
+      allow get: if isPublishedDoc() || isAdmin();
+      allow list: if isAdmin() || (request.query.limit != null && request.query.limit <= 100 && resource.data.published == true);
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['slug', 'date', 'tags', 'read', 'order', 'published', 'locales_available', 'locale', 'id', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['slug', 'date', 'tags', 'read', 'order', 'published', 'locales_available', 'locale', 'id', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+
+    match /roadmap/{id} {
+      allow get: if (resource.data.hidden == false) || isAdmin();
+      allow list: if isAdmin() || (request.query.limit != null && request.query.limit <= 100 && resource.data.hidden == false);
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['id', 'status', 'priority', 'href', 'sprint_id', 'hidden', 'order', 'locale', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['id', 'status', 'priority', 'href', 'sprint_id', 'hidden', 'order', 'locale', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+
+    // ----- Singletons (hero/about/roadmap) -----
+    match /singletons/{name} {
+      allow get: if true; // Always public — these power the public site
+      allow list: if false; // No listing — clients read by ID
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && isValidSingletonCreate(name);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && isValidSingletonUpdate(name);
+      allow delete: if isAdmin();
+    }
+
+    // ----- PR #66 collections — admin write via server endpoints. Public
+    //       read of `social` + `experience` + `skills` + `education` +
+    //       `certifications` + `contact/main` is allowed since they appear on
+    //       the public /about page; `profile/main` is admin-only because it
+    //       holds the canonical email + phone (Plan B Task 0.5 also removes
+    //       it from the server-side public allowlist).
+    match /profile/{name} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['headline', 'summary', 'email', 'phone', 'avatar', 'location', 'id', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['headline', 'summary', 'email', 'phone', 'avatar', 'location', 'id', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+    match /contact/{name} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['email', 'timezone', 'availability', 'preferredChannel', 'calendarUrl', 'id', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['email', 'timezone', 'availability', 'preferredChannel', 'calendarUrl', 'id', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+    match /social/{id} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['id', 'label', 'url', 'icon', 'order', 'visible', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['id', 'label', 'url', 'icon', 'order', 'visible', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+    match /experience/{id} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['id', 'role', 'company', 'companyUrl', 'start', 'end', 'summary', 'achievements', 'order', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['id', 'role', 'company', 'companyUrl', 'start', 'end', 'summary', 'achievements', 'order', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+    match /skills/{id} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['id', 'name', 'category', 'proficiency', 'order', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['id', 'name', 'category', 'proficiency', 'order', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+    match /education/{id} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['id', 'institution', 'degree', 'field', 'start', 'end', 'order', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['id', 'institution', 'degree', 'field', 'start', 'end', 'order', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+    match /certifications/{id} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.updatedAt is timestamp
+        && hasOnlyKeys(['id', 'name', 'issuer', 'issued', 'expires', 'credentialId', 'credentialUrl', 'order', 'createdAt', 'updatedAt']);
+      allow update: if isAdmin()
+        && hasValidUpdatedAtOnUpdate()
+        && hasOnlyAffectedKeys(['id', 'name', 'issuer', 'issued', 'expires', 'credentialId', 'credentialUrl', 'order', 'createdAt', 'updatedAt']);
+      allow delete: if isAdmin();
+    }
+
+    // ----- Settings (admin allowlist) — SERVER-ONLY writes.
+    //       Reads via isAdmin() use get() which bypasses these rules at
+    //       evaluation time. Client writes are disabled — only the seed
+    //       script (firebase-admin) may modify the allowlist. Prevents an
+    //       admin who steals their own token from adding accomplices.
+    match /settings/{name} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // ----- Contact messages — locked until App Check ships in Plan E.
+    //       App Check is a hard prerequisite — without it, any caller can
+    //       spam /messages with garbage. Cloud Function from Plan E will
+    //       create messages server-side after verifying App Check.
+    match /messages/{id} {
+      allow create: if false;
+      allow get, list, update, delete: if isAdmin();
+    }
+
+    // ----- Audit log — admin client append-only.
+    //       Records every admin upsert and delete with immutable uid matching caller.
+    match /audit/{id} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Default deny.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

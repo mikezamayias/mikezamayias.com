@@ -1,0 +1,16 @@
+{
+    "recommendations": [
+        "vue.volar",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "editorconfig.editorconfig",
+        "antfu.iconify",
+        "vue.vscode-typescript-vue-plugin",
+        "formulahendry.auto-close-tag",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "vitest.explorer"
+    ],
+    "unwantedRecommendations": ["octref.vetur"]
+}

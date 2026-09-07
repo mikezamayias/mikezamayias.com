@@ -1,0 +1,492 @@
+name: CI
+
+on:
+    pull_request:
+        branches: [dev, prod]
+    push:
+        branches: [dev]
+    workflow_dispatch:
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+    pull-requests: write
+
+# Runtime secrets sourced from the SOPS-encrypted file at
+# `.env.shared.sops.yaml` (encrypted with the age recipient declared
+# in `.sops.yaml`). The age private key lives in the `SOPS_AGE_KEY`
+# repo secret, scoped per step to only the steps that decrypt.
+# Replaces the prior Infisical-Universal-Auth flow.
+
+jobs:
+    lint:
+        name: Lint
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: ESLint
+              run: bun run lint
+
+            - name: Prettier Check
+              run: bunx prettier --check .
+
+    typecheck:
+        name: Type Check
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: Install SOPS
+              run: |
+                  curl -fsSL -o /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_amd64.deb
+                  sudo dpkg -i /tmp/sops.deb
+                  sops --version
+
+            - name: Generate content snapshot
+              # `server/api/content/*` statically imports content/*.json, which are
+              # gitignored build artifacts. Without them typecheck fails with TS2307.
+              # This passed on the old self-hosted runner only because `clean: false`
+              # left a previous build's files in the working tree.
+              run: |
+                  set -a
+                  source <(sops -d --output-type dotenv .env.shared.sops.yaml)
+                  set +a
+                  bun run snapshot
+              env:
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+            - name: Type Check
+              run: bunx nuxi typecheck
+
+    test:
+        name: Test
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: Run Tests with Coverage
+              run: bun run test:coverage -- --reporter=verbose
+
+            - name: Upload Coverage Artifact
+              if: always()
+              continue-on-error: true
+              uses: actions/upload-artifact@v5
+              with:
+                  name: coverage
+                  path: coverage/
+                  retention-days: 7
+                  if-no-files-found: warn
+
+    rules:
+        name: Firestore Rules
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: Set up JDK for the Firestore emulator
+              uses: actions/setup-java@v5
+              with:
+                  distribution: temurin
+                  java-version: "21"
+
+            - name: Run Firestore Rules Tests
+              run: bun run test:rules
+
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: Install SOPS
+              run: |
+                  curl -fsSL -o /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_amd64.deb
+                  sudo dpkg -i /tmp/sops.deb
+                  sops --version
+
+            - name: Build for SSR
+              # SOPS decrypts `.env.shared.sops.yaml` to a dotenv-format
+              # stream, which is `source`d into the build shell so
+              # `bun run build` picks up every NUXT_PUBLIC_* / SENTRY_*
+              # variable. The decrypted file never touches disk —
+              # process substitution `<(...)` pipes it directly.
+              # NUXT_PUBLIC_APP_ENV stays an explicit override so PR
+              # preview builds gate Sentry ingestion off (see
+              # sentry.{server,client}.config.ts).
+              run: |
+                  set -a
+                  source <(sops -d --output-type dotenv .env.shared.sops.yaml)
+                  set +a
+                  bun run build
+              env:
+                  NUXT_PUBLIC_APP_ENV: staging
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+            - name: Verify admin shells
+              run: |
+                  set -euo pipefail
+                  # Every prerendered admin route must be a real SPA shell. A middleware
+                  # redirect during prerender produces a 98-byte meta-refresh stub instead,
+                  # which bounces signed-in admins before hydration. Caught here, not in prod.
+                  stubs=0
+                  for f in $(find .output/public/admin -name index.html); do
+                    if ! grep -q 'id="__nuxt"' "$f" || [ "$(wc -c <"$f")" -lt 10000 ]; then
+                      echo "STUB: $f ($(wc -c <"$f") bytes)"; stubs=$((stubs+1))
+                    fi
+                  done
+                  [ "$stubs" -eq 0 ] || { echo "$stubs admin shell(s) are redirect stubs"; exit 1; }
+                  echo "$(find .output/public/admin -name index.html | wc -l) admin shells verified"
+
+            - name: Upload Build Artifact
+              continue-on-error: true
+              uses: actions/upload-artifact@v5
+              with:
+                  name: build-output
+                  path: .output
+                  include-hidden-files: true
+                  retention-days: 1
+                  if-no-files-found: warn
+
+    lighthouse:
+        name: Lighthouse Audit
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        # Audit the deployed preview channel instead of `.output/public`
+        # via `staticDistDir`. The static dir served no API routes, so
+        # the home page's client-side fetches of `/api/content/work`
+        # and `/api/content/writing` 404'd — bloating `errors-in-console`
+        # and dragging Best Practices off the gate. The preview deploy
+        # runs the full Nitro Firebase function, so those endpoints
+        # respond with real data and the audit reflects production.
+        # `needs: preview` is sufficient — `preview` already needs
+        # `build`, so the build artifact + preview URL both arrive
+        # transitively without naming `build` here.
+        needs: preview
+        if: github.event_name == 'pull_request' && needs.preview.outputs.preview_url != ''
+        # The `treosh/lighthouse-ci-action` posts a check + PR comment
+        # via the supplied GITHUB_TOKEN; both require write scope on
+        # the corresponding resources. The repo-level `permissions:`
+        # block above (line 14) covers `pull-requests: write`, but
+        # GitHub-Actions best practice is to declare them per-job so
+        # downgrading the repo defaults doesn't silently break this
+        # one. `checks: write` is needed for the temporary-public-
+        # storage upload result check, `contents: read` for the
+        # action's checkout-less log fetch.
+        permissions:
+            contents: read
+            pull-requests: write
+            checks: write
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Resolve Lighthouse URL
+              id: lighthouse_url
+              run: |
+                  # Firebase Hosting preview channels use `pr-{N}` only (see
+                  # `channelId: pr-${{ github.event.pull_request.number }}` in
+                  # the deploy step). Branch-slug suffixes are not part of
+                  # the channel name and 404 when probed.
+                  URL="${{ needs.preview.outputs.preview_url }}"
+                  if [ -z "$URL" ]; then
+                    URL="https://personal-website-v1-f775a--pr${{ github.event.pull_request.number }}.web.app"
+                  fi
+                  echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+            - name: Wait for preview channel
+              id: wait_preview
+              continue-on-error: true
+              run: |
+                  URL="${{ steps.lighthouse_url.outputs.url }}"
+                  echo "Waiting for preview: $URL"
+                  LAST_CODE="000"
+                  for attempt in $(seq 1 36); do
+                    code=$(curl -sS -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+                    LAST_CODE="$code"
+                    if [ "$code" = "200" ] || [ "$code" = "304" ]; then
+                      echo "Preview ready (HTTP $code) after attempt $attempt"
+                      exit 0
+                    fi
+                    sleep 5
+                  done
+                  echo "Preview URL not ready: $URL (last HTTP $LAST_CODE)" >&2
+                  exit 1
+
+            - name: Finalize Lighthouse URL
+              id: final_lighthouse_url
+              run: |
+                  URL="${{ steps.lighthouse_url.outputs.url }}"
+                  if [ "${{ steps.wait_preview.outcome }}" != "success" ]; then
+                    echo "Preview channel unavailable — auditing production URL instead" >&2
+                    URL="https://personal-website-v1-f775a.web.app/"
+                  fi
+                  echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+            - name: Run Lighthouse
+              id: lighthouse
+              uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
+              with:
+                  # CI supplies the audit URL externally via this
+                  # `urls` input (the Firebase preview channel from the
+                  # upstream `preview` job's output). `lighthouserc.json`
+                  # intentionally does NOT define `collect.url` — local
+                  # `lhci` runs supply their own URL on the command
+                  # line, e.g.
+                  #   `lhci autorun --collect.url=http://localhost:3000`.
+                  urls: ${{ steps.final_lighthouse_url.outputs.url }}
+                  configPath: ./lighthouserc.json
+                  uploadArtifacts: false
+                  temporaryPublicStorage: false
+
+            - name: Format Lighthouse Score
+              id: format
+              if: steps.lighthouse.outcome == 'success'
+              continue-on-error: true
+              uses: actions/github-script@v9
+              with:
+                  script: |
+                      const results = ${{ steps.lighthouse.outputs.manifest }};
+                      const rep = results.find((r) => r.isRepresentativeRun) || results[results.length - 1];
+                      const summary = rep.summary;
+
+                      const score = (s) => Math.round(s * 100);
+                      const emoji = (s) => s >= 0.9 ? '🟢' : s >= 0.5 ? '🟠' : '🔴';
+
+                      const body = `## ⚡ Lighthouse Report
+
+                      | Category | Score |
+                      |----------|-------|
+                      | ${emoji(summary.performance)} Performance | ${score(summary.performance)} |
+                      | ${emoji(summary.accessibility)} Accessibility | ${score(summary.accessibility)} |
+                      | ${emoji(summary['best-practices'])} Best Practices | ${score(summary['best-practices'])} |
+                      | ${emoji(summary.seo)} SEO | ${score(summary.seo)} |
+
+                      Audited: \`${rep.url}\``;
+
+                      github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body
+                      });
+
+    a11y:
+        name: Accessibility (axe-core)
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        needs: build
+        if: github.event_name == 'pull_request'
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Download Build Artifact
+              id: build-artifact
+              continue-on-error: true
+              uses: actions/download-artifact@v5
+              with:
+                  name: build-output
+                  path: .output
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: Install SOPS
+              run: |
+                  curl -fsSL -o /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_amd64.deb
+                  sudo dpkg -i /tmp/sops.deb
+                  sops --version
+
+            - name: Build static output (artifact fallback)
+              if: steps.build-artifact.outcome != 'success'
+              run: |
+                  set -a
+                  source <(sops -d --output-type dotenv .env.shared.sops.yaml)
+                  set +a
+                  bun run build
+              env:
+                  NUXT_PUBLIC_APP_ENV: staging
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+            # Serve the prerendered static output (the same dist dir
+            # Lighthouse uses via `staticDistDir`). `nuxt preview` is
+            # not implemented for the firebase Nitro preset, so we
+            # cannot boot the SSR runtime here. axe-core is therefore
+            # scoped to prerendered routes only (`/`, `/terms`, and one
+            # privacy page). SSR routes (/work, /writing, /about,
+            # /contact) are covered manually until a firebase-emulator
+            # job lands in a later sweep.
+            - name: Start static preview server
+              # Pick a free loopback port and force serve to use it. Without
+              # --no-port-switching, serve silently falls back to a random port
+              # when 3000 is occupied, while axe may still audit a stale
+              # process on localhost:3000.
+              run: |
+                  A11Y_PORT=$(node -e "const net = require('node:net'); const server = net.createServer(); server.listen(0, '127.0.0.1', () => { console.log(server.address().port); server.close(); });")
+                  A11Y_BASE_URL="http://127.0.0.1:${A11Y_PORT}"
+                  echo "A11Y_BASE_URL=${A11Y_BASE_URL}" >> "$GITHUB_ENV"
+
+                  bun run preview:static -- \
+                    --listen "tcp://127.0.0.1:${A11Y_PORT}" \
+                    --no-port-switching \
+                    --no-clipboard \
+                    > /tmp/serve.log 2>&1 &
+                  echo $! > /tmp/serve.pid
+
+                  for _ in $(seq 1 20); do
+                    if curl -fsS "${A11Y_BASE_URL}/" > /dev/null; then
+                      exit 0
+                    fi
+                    sleep 1
+                  done
+
+                  cat /tmp/serve.log
+                  exit 1
+
+            - name: Run axe-core (WCAG 2 A + AA)
+              run: |
+                  bunx --bun @axe-core/cli \
+                    --chromedriver-path "${CHROMEWEBDRIVER}/chromedriver" \
+                    "${A11Y_BASE_URL}/" \
+                    "${A11Y_BASE_URL}/terms" \
+                    "${A11Y_BASE_URL}/privacy/healpen" \
+                    --tags wcag2a,wcag2aa --exit
+
+            - name: Stop preview server
+              if: always()
+              run: |
+                  if [ -f /tmp/serve.pid ]; then
+                    kill "$(cat /tmp/serve.pid)" || true
+                  fi
+
+    preview:
+        name: Preview Deploy
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        needs: build
+        if: github.event_name == 'pull_request'
+        permissions:
+            contents: read
+            pull-requests: write
+            checks: write
+        # Exposes the Firebase preview channel URL as a job output so
+        # downstream jobs (Lighthouse) can audit the real deployed
+        # surface — including server routes like `/api/content/*` —
+        # instead of a static dir that 404s on every dynamic endpoint.
+        # `urls` output is a JSON-encoded array (e.g. `["https://...web.app"]`)
+        # set unconditionally by the action; `details_url` came back
+        # empty on a prior run at this SHA so we extract from `urls`
+        # explicitly.
+        outputs:
+            preview_url: ${{ steps.resolved_preview_url.outputs.url }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Download Build Artifact
+              id: build-artifact
+              continue-on-error: true
+              uses: actions/download-artifact@v5
+              with:
+                  name: build-output
+                  path: .output
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: Install SOPS
+              run: |
+                  curl -fsSL -o /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_amd64.deb
+                  sudo dpkg -i /tmp/sops.deb
+                  sops --version
+
+            - name: Build static output (artifact fallback)
+              if: steps.build-artifact.outcome != 'success'
+              run: |
+                  set -a
+                  source <(sops -d --output-type dotenv .env.shared.sops.yaml)
+                  set +a
+                  bun run build
+              env:
+                  NUXT_PUBLIC_APP_ENV: staging
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+            # The Firebase Hosting service-account key lives in the repo as a
+            # SOPS+age file (secrets/firebase-service-account.sops.yaml). Decrypt
+            # it here, mask every line, and hand it to the deploy action as a
+            # step output.
+            - name: Decrypt Firebase service account (SOPS + age)
+              id: creds
+              env:
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+              run: |
+                  set -euo pipefail
+                  SA_JSON=$(sops -d --extract '["service_account_json"]' secrets/firebase-service-account.sops.yaml)
+                  echo "::add-mask::$SA_JSON"
+                  printf '%s' "$SA_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);for (const v of Object.values(j)) for (const l of String(v).split("\n")) if (l.trim()) console.log("::add-mask::"+l);});'
+                  {
+                    echo "json<<SA_EOF"
+                    echo "$SA_JSON"
+                    echo "SA_EOF"
+                    echo "present=true"
+                  } >> "$GITHUB_OUTPUT"
+
+            - name: Deploy Preview to Firebase
+              id: deploy
+              if: steps.creds.outputs.present == 'true'
+              uses: FirebaseExtended/action-hosting-deploy@e2eda2e106cfa35cdbcf4ac9ddaf6c4756df2c8c # v0
+              with:
+                  repoToken: ${{ secrets.GITHUB_TOKEN }}
+                  firebaseServiceAccount: ${{ steps.creds.outputs.json }}
+                  # Project ID hardcoded rather than read from secrets —
+                  # the value is public (it's literally in every preview
+                  # URL the Firebase action posts on each PR), and using
+                  # `secrets.FIREBASE_PROJECT_ID` causes GH Actions to
+                  # redact `personal-website-v1-f775a` from this job's
+                  # outputs. The `urls` output then arrives at the
+                  # downstream Lighthouse job as `[]` and lhci fails with
+                  # `No URLs provided to collect`. See PR #124 failed
+                  # run https://github.com/mikezamayias/personal-website-v1/actions/runs/26306468169.
+                  projectId: personal-website-v1-f775a
+                  channelId: pr-${{ github.event.pull_request.number }}
+                  expires: 7d
+
+            - name: Publish preview URL for downstream jobs
+              id: resolved_preview_url
+              if: steps.creds.outputs.present == 'true'
+              run: |
+                  URL="https://personal-website-v1-f775a--pr${{ github.event.pull_request.number }}.web.app"
+                  if [ -n "${{ steps.deploy.outputs.urls }}" ]; then
+                    PARSED=$(node -e "try{const u=JSON.parse(process.argv[1]);process.stdout.write(u[0]||'')}catch{}" "${{ steps.deploy.outputs.urls }}")
+                    if [ -n "$PARSED" ]; then URL="$PARSED"; fi
+                  fi
+                  echo "url=$URL" >> "$GITHUB_OUTPUT"

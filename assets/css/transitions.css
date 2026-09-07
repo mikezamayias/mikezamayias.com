@@ -1,0 +1,209 @@
+/* assets/css/transitions.css */
+
+/* directional theme view-transition wipe */
+::view-transition-group(root) {
+    animation-duration: 0.85s;
+    animation-timing-function: var(--ease-out-expo);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.85s;
+    animation-timing-function: var(--ease-out-expo);
+    mix-blend-mode: normal;
+}
+
+html[data-theme-dir="down"]::view-transition-new(root) {
+    animation-name: codex-wipe-in-down;
+}
+
+html[data-theme-dir="down"]::view-transition-old(root) {
+    animation-name: codex-wipe-out-down;
+}
+
+html[data-theme-dir="up"]::view-transition-new(root) {
+    animation-name: codex-wipe-in-up;
+}
+
+html[data-theme-dir="up"]::view-transition-old(root) {
+    animation-name: codex-wipe-out-up;
+}
+
+@keyframes codex-wipe-in-down {
+    from {
+        clip-path: inset(0 0 100% 0);
+    }
+
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+@keyframes codex-wipe-out-down {
+    from {
+        clip-path: inset(0 0 0 0);
+    }
+
+    to {
+        clip-path: inset(100% 0 0 0);
+    }
+}
+
+@keyframes codex-wipe-in-up {
+    from {
+        clip-path: inset(100% 0 0 0);
+    }
+
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+@keyframes codex-wipe-out-up {
+    from {
+        clip-path: inset(0 0 0 0);
+    }
+
+    to {
+        clip-path: inset(0 0 100% 0);
+    }
+}
+
+/* gold scanline that rides the wipe boundary */
+.codex-theme-scan {
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--vergina-gold);
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 0 12px 1px color-mix(in oklch, var(--vergina-gold) 60%, transparent);
+}
+
+.codex-theme-scan.run-down {
+    animation: codex-scan-down 0.85s var(--ease-out-expo) forwards;
+}
+
+.codex-theme-scan.run-up {
+    animation: codex-scan-up 0.85s var(--ease-out-expo) forwards;
+}
+
+@keyframes codex-scan-down {
+    0% {
+        top: -2px;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 100vh;
+        opacity: 0;
+    }
+}
+
+@keyframes codex-scan-up {
+    0% {
+        top: 100vh;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        top: -2px;
+        opacity: 0;
+    }
+}
+
+/* Plan I — universal page transition. `<NuxtPage transition="codex-page">`
+ * in `app.vue` runs this on every route change. Same easing as the
+ * intra-page `codex-fade` below, longer duration (350 ms) so the
+ * eye reads it as a deliberate page swap rather than a flicker.
+ * Combined with `<NuxtPage :keepalive>` the leaving page's DOM is
+ * preserved in memory while it fades out, and the incoming page is
+ * either restored from the keepalive cache (no skeleton) or
+ * rendered fresh — either way the transition wraps the swap. */
+.codex-page-enter-active,
+.codex-page-leave-active {
+    transition:
+        opacity 0.35s var(--ease-out-quart),
+        transform 0.35s var(--ease-out-quart);
+    will-change: opacity, transform;
+}
+
+.codex-page-enter-from,
+.codex-page-leave-to {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.codex-page-enter-to,
+.codex-page-leave-from {
+    opacity: 1;
+    transform: none;
+}
+
+/* Plan I — fade between loading / error / data states for the public
+ * list + detail pages. Replaces the abrupt skeleton ↔ list pop on
+ * SPA nav with a 250 ms fade + 4 px translate. `mode="out-in"` on the
+ * `<Transition>` ensures only one branch is mounted at a time. */
+.codex-fade-enter-active,
+.codex-fade-leave-active {
+    transition:
+        opacity 0.25s var(--ease-out-quart),
+        transform 0.25s var(--ease-out-quart);
+    will-change: opacity, transform;
+}
+
+.codex-fade-enter-from,
+.codex-fade-leave-to {
+    opacity: 0;
+    transform: translateY(4px);
+}
+
+.codex-fade-enter-to,
+.codex-fade-leave-from {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none !important;
+    }
+
+    .codex-theme-scan {
+        display: none;
+    }
+
+    .codex-fade-enter-active,
+    .codex-fade-leave-active,
+    .codex-page-enter-active,
+    .codex-page-leave-active {
+        transition: none;
+    }
+
+    .codex-fade-enter-from,
+    .codex-fade-leave-to,
+    .codex-page-enter-from,
+    .codex-page-leave-to {
+        opacity: 1;
+        transform: none;
+    }
+}

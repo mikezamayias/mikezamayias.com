@@ -1,0 +1,23 @@
+[
+    {
+        "id": "independent-software-engineer",
+        "role": {
+            "en": "Independent Software Engineer",
+            "el": "Ανεξάρτητος Μηχανικός Λογισμικού"
+        },
+        "company": "mz",
+        "companyUrl": "https://mikezamayias.com",
+        "start": "2024-01",
+        "summary": {
+            "en": "Shipping focused mobile and web products across Flutter, Nuxt, Firebase, and AI-assisted workflows.",
+            "el": "Υλοποίηση mobile και web προϊόντων με Flutter, Nuxt, Firebase και AI-assisted workflows."
+        },
+        "achievements": [
+            {
+                "en": "Built a content-driven portfolio platform with Firestore-backed publishing and an auth-gated admin portal.",
+                "el": "Υλοποίησε content-driven portfolio με Firestore publishing και auth-gated admin portal."
+            }
+        ],
+        "order": 0
+    }
+]

@@ -1,0 +1,238 @@
+/* assets/css/tailwind.css
+ * Tailwind base + global styles. Tokens come from tokens.css.
+ */
+
+@import url("./tokens.css");
+@import url("./transitions.css");
+@import url("./codex-patterns.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        color-scheme: light;
+    }
+
+    html[data-theme="light"] {
+        color-scheme: light;
+    }
+
+    html[data-theme="dark"] {
+        color-scheme: dark;
+    }
+
+    body {
+        background: linear-gradient(
+            180deg,
+            color-mix(in oklch, var(--bg) 96%, var(--surface-cool)) 0%,
+            var(--bg) 36%,
+            color-mix(in oklch, var(--bg) 94%, var(--surface-tint)) 100%
+        );
+        color: var(--fg);
+        font-family: var(--font-sans);
+        font-size: 15px;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizelegibility;
+    }
+
+    /* Reserve scroll space under the fixed-position consent banner so the
+     * page bottom (form submit buttons, footer links) doesn't sit behind
+     * the banner. Class is toggled on <html> by the ConsentBanner
+     * component while `needsDecision` is true; once the user accepts /
+     * declines the class is removed and the padding collapses. Smooth
+     * scroll target via `scroll-padding-bottom` so #anchor jumps also
+     * land above the banner.
+     *
+     * Heights are generous to absorb the current EN/EL copy plus a line
+     * of wrap. If a future locale or copy revision pushes the banner
+     * taller, switch to a ResizeObserver that writes the measured height
+     * onto a `--codex-consent-banner-height` CSS var. The 640px
+     * breakpoint matches Tailwind's `sm:` so the body padding flips in
+     * sync with the banner's own `grid-template-columns: 1fr` stack at
+     * that width.
+     */
+    html.has-consent-banner body {
+        padding-bottom: 8rem;
+    }
+
+    html.has-consent-banner {
+        scroll-padding-bottom: 8rem;
+    }
+
+    @media (width <= 640px) {
+        html.has-consent-banner body {
+            padding-bottom: 12rem;
+        }
+
+        html.has-consent-banner {
+            scroll-padding-bottom: 12rem;
+        }
+
+        /* Mobile rhythm: the per-page `font-size: clamp(2rem, 6vw, 3.5rem)`
+         * on `.codex-h1-page` floors at 2rem (32px), which dominates
+         * the small-viewport hero. The 1.125rem `.codex-lede` is also
+         * heavy next to it. Tighten both at <=640px without changing
+         * the desktop scale. */
+        .codex-h1-page {
+            font-size: clamp(1.5rem, 8vw, 2.25rem);
+            margin-top: 1.5rem !important;
+            margin-bottom: 0.75rem !important;
+        }
+
+        .codex-lede {
+            font-size: 0.95rem;
+        }
+    }
+
+    /* Scroll-reveal entry animation — design §9 ("fade + 20px translateY,
+     * 0.8s duration"). The `v-codex-reveal` directive (composables/
+     * useScrollReveal.ts + plugins/codex-reveal.ts) adds `.codex-reveal`
+     * on mount and flips to `.codex-revealed` when the element enters the
+     * viewport (or immediately when prefers-reduced-motion is set).
+     * Sections opt in by adding `v-codex-reveal` to their root element.
+     *
+     * The page-level reduced-motion rule below already cuts the transition
+     * to ~0ms, but the explicit static fallback keeps content visible if
+     * the directive registration regresses. */
+    .codex-reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition:
+            opacity 0.8s var(--ease-out-quart),
+            transform 0.8s var(--ease-out-quart);
+
+        /* Promote to compositor layer so the translateY animation
+         * doesn't contribute to Cumulative Layout Shift. Without this,
+         * Chrome scores transform-animated movement against CLS when
+         * the element isn't on its own layer — pre-mock content was
+         * thin enough not to trigger the threshold, but the richer
+         * preview-mock payload (PR #95) pushed CLS over 0.1 on /. */
+        will-change: transform, opacity;
+
+        /* `--codex-reveal-delay` is set per-element by the directive
+         * when a cascade value is supplied (`v-codex-reveal="i * 80"`).
+         * Defaults to 0ms when absent so non-cascading reveals fire
+         * immediately on intersection. */
+        transition-delay: var(--codex-reveal-delay, 0ms);
+    }
+
+    .codex-reveal.codex-revealed {
+        opacity: 1;
+        transform: none;
+
+        /* Drop will-change after the reveal completes — keeps memory
+         * footprint flat (Chrome holds composited layers in GPU mem
+         * for elements with will-change set). */
+        will-change: auto;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .codex-reveal {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    h1,
+    h2,
+    h3 {
+        text-wrap: balance;
+    }
+
+    p,
+    li {
+        text-wrap: pretty;
+    }
+
+    /* a11y baseline — focus-visible everywhere unless explicitly overridden */
+    :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 1px;
+    }
+
+    /* page-level reduced-motion — kills CSS animations + smooth scroll */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    /* legacy utility classes preserved from prior styling — used by older
+       components that haven't been migrated to the Codex layout yet. Safe to
+       keep because they only compose Tailwind utilities, not MD3 tokens. */
+    .pads {
+        @apply p-3 sm:p-6;
+    }
+
+    .gaps {
+        @apply gap-3 sm:gap-6;
+    }
+
+    .my-transition {
+        @apply transition-all duration-150 ease-in-out;
+    }
+
+    .prose {
+        font-family: var(--font-sans);
+    }
+
+    .prose section {
+        padding: 1.1rem 0;
+        border-top: 1px solid color-mix(in oklch, var(--line) 45%, transparent);
+    }
+
+    .prose h2 {
+        font-family: var(--font-display);
+        font-weight: 400;
+        letter-spacing: -0.02em;
+    }
+
+    .prose h3 {
+        font-weight: 800;
+    }
+
+    .prose p,
+    .prose li {
+        color: var(--soft);
+    }
+}
+
+@layer utilities {
+    /* Codex-specific page wrappers. NOT named `.container` to avoid
+       overriding Tailwind's built-in container utility used by legacy
+       layouts (e.g. layouts/admin.vue). */
+    .codex-container {
+        max-width: 840px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .codex-container-wide {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+}

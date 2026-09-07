@@ -1,0 +1,12 @@
+[
+    {
+        "id": "software-engineering",
+        "institution": "Software Engineering",
+        "degree": {
+            "en": "Product engineering practice",
+            "el": "Πρακτική product engineering"
+        },
+        "start": "2018-01",
+        "order": 0
+    }
+]

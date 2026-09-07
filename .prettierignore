@@ -1,0 +1,23 @@
+node_modules
+.nuxt
+.output
+dist
+.firebase
+.lighthouseci
+*.min.js
+*.min.css
+bun.lock
+
+# Source-of-truth design system reference — preserve original formatting
+
+# Brand asset bundle (extracted, not authored)
+brand-extracted/
+
+# SOPS-encrypted files — values are AES-encrypted ciphertext + ENC[...]
+# metadata blocks. Prettier doesn't understand the in-line structure;
+# rewriting would re-flow the encrypted blob into invalid SOPS YAML.
+*.sops.yaml
+*.sops.yml
+
+# Vitest coverage reporter output — generated, not authored.
+coverage/

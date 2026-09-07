@@ -1,0 +1,119 @@
+[
+    {
+        "slug": "healpen",
+        "start": "2024-01",
+        "stack": ["flutter", "openai"],
+        "glyph": "H",
+        "order": 0,
+        "published": true,
+        "locales_available": ["en", "el"],
+        "locale": {
+            "en": {
+                "name": "Healpen",
+                "desc": "Expressive-writing journal with on-device AI insights. Closed beta on TestFlight.",
+                "long": "A small mental-health practice in a phone."
+            },
+            "el": {
+                "name": "Healpen",
+                "desc": "Ημερολόγιο εκφραστικής γραφής με on-device AI insights. Closed beta στο TestFlight.",
+                "long": "Μια μικρή πρακτική ψυχικής υγείας στο τηλέφωνο."
+            }
+        },
+        "links": [{ "kind": "live", "url": "https://healpen.app", "label": "TestFlight" }]
+    },
+    {
+        "slug": "budget-coach",
+        "start": "2024-01",
+        "end": "2024-12",
+        "stack": ["flutter", "firebase"],
+        "glyph": "B",
+        "order": 1,
+        "published": true,
+        "locales_available": ["en", "el"],
+        "locale": {
+            "en": {
+                "name": "Budget Coach",
+                "desc": "A coach, not a spreadsheet. Daily check-in, weekly review.",
+                "long": "For people who hate spreadsheets but want a hold on their money."
+            },
+            "el": {
+                "name": "Budget Coach",
+                "desc": "Coach, όχι spreadsheet. Καθημερινό check-in, εβδομαδιαία ανασκόπηση.",
+                "long": "Για όσους μισούν τα λογιστικά φύλλα αλλά θέλουν έλεγχο στα οικονομικά τους."
+            }
+        }
+    },
+    {
+        "slug": "peakward",
+        "start": "2023-01",
+        "end": "2023-12",
+        "stack": ["flutter", "postgres"],
+        "glyph": "P",
+        "order": 2,
+        "published": true,
+        "locales_available": ["en", "el"],
+        "locale": {
+            "en": {
+                "name": "Peakward",
+                "desc": "Endurance training log built around volume and intent, not vanity metrics.",
+                "long": "Training, not leaderboards."
+            },
+            "el": {
+                "name": "Peakward",
+                "desc": "Ημερολόγιο προπόνησης αντοχής γύρω από όγκο και πρόθεση — όχι vanity metrics.",
+                "long": "Προπόνηση, όχι κατάταξη."
+            }
+        },
+        "links": [
+            {
+                "kind": "appstore",
+                "url": "https://testflight.apple.com/join/vg7K8ZA5",
+                "label": "TestFlight beta"
+            }
+        ]
+    },
+    {
+        "slug": "lsom",
+        "start": "2023-01",
+        "end": "2023-12",
+        "stack": ["nuxt", "supabase"],
+        "glyph": "L",
+        "order": 3,
+        "published": true,
+        "locales_available": ["en", "el"],
+        "locale": {
+            "en": {
+                "name": "LSOM",
+                "desc": "Lightweight social-media accountability tool. Open beta.",
+                "long": "Don't disappear, just discipline."
+            },
+            "el": {
+                "name": "LSOM",
+                "desc": "Ελαφρύ εργαλείο accountability για social media. Open beta.",
+                "long": "Όχι εξαφάνιση — απλώς πειθαρχία."
+            }
+        }
+    },
+    {
+        "slug": "site-2026",
+        "start": "2026-01",
+        "stack": ["nuxt 4", "ts"],
+        "glyph": "·Z",
+        "order": 4,
+        "published": true,
+        "locales_available": ["en", "el"],
+        "locale": {
+            "en": {
+                "name": "This site, v.2026",
+                "desc": "The reference platform for everything else.",
+                "long": "You're reading it."
+            },
+            "el": {
+                "name": "Αυτό το site, v.2026",
+                "desc": "Η πλατφόρμα αναφοράς για όλα τα υπόλοιπα.",
+                "long": "Αυτό που διαβάζετε."
+            }
+        },
+        "links": [{ "kind": "repo", "url": "https://github.com/mikezamayias/personal-website-v1" }]
+    }
+]

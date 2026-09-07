@@ -1,0 +1,111 @@
+/* assets/css/tokens.css
+ *
+ * Canonical design-system tokens — sourced verbatim from
+ * `hellas-design-system.html`. NO new color values may be added here. All
+ * semantic aliases (--bg, --fg, --accent, etc.) below MUST point at one of the
+ * raw tokens above them.
+ *
+ * Hellenic-flavor rules (per memory `feedback_brand_tone`):
+ *   - Tone Greece down. No § markers, no MMXXVI labels, no decorative meander.
+ *   - Greek typography (GFS Didot, GFS Neohellenic) reserved for Greek text;
+ *     not used as ornament for English copy.
+ *   - --vergina-gold reserved for micro accents (cursor, scanline).
+ */
+
+:root {
+    /* paper / ink — surface tones */
+    --paper: #f4eee0;
+    --paper-deep: #ece4d2;
+    --argent: #fff;
+    --ink: #1a1a1a;
+    --ink-soft: #4a453d;
+    --ink-faint: #8a8478;
+    --rule: #c9bfa5;
+    --rule-soft: #ddd4ba;
+
+    /* blue family — historic flag blues from §II of hellas-design-system.html */
+    --blue-orlov: #3d6a9c;
+    --blue-epidaurus: #1d72a8;
+    --blue-bavarian: #4a8fc7;
+    --blue-royal: #0d5eaf;
+    --blue-junta: #0a1f5c;
+    --blue-modern: #004c98;
+    --blue-coat: #014488;
+
+    /* accent / symbol family */
+    --vergina-gold: #c9a227;
+    --imperial-gold: #b88a1f;
+    --olive-victor: #6b7c3f;
+    --olive-deep: #3f4a26;
+    --phoenix-ember: #c84a1a;
+    --phoenix-ash: #2b1a14;
+    --tyrian-purple: #66023c;
+    --athena-bronze: #7b6537;
+    --aegean-deep: #15445e;
+    --santorini-cyan: #0892d0;
+    --terracotta: #b8593a;
+    --ochre: #c8924a;
+
+    /* font families */
+    --font-display: "GFS Didot", "Cormorant Garamond", georgia, serif;
+    --font-serif: "Cormorant Garamond", "GFS Didot", georgia, serif;
+    --font-sans: "GFS Neohellenic", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    /* easings */
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* semantic aliases — light theme defaults */
+    --bg: var(--argent);
+    --fg: var(--ink);
+    --soft: var(--ink-soft);
+    --faint: var(--ink-faint);
+    --line: var(--rule);
+    --accent: var(--aegean-deep);
+
+    /* surface aliases — used by shadcn-ui primitives (hover bg,
+     * subtle fills, badge bg) AND by codex-patterns.css. They MUST
+     * swap with `data-theme` or shadcn `outline` / `ghost` / `secondary`
+     * buttons end up with a light hover surface under dark text in
+     * dark mode (poor contrast). Light defaults below; dark overrides
+     * follow in the `html[data-theme="dark"]` block. */
+    --surface: color-mix(in oklch, var(--argent) 88%, var(--paper-deep));
+    --surface-hover: color-mix(in oklch, var(--argent) 86%, var(--blue-bavarian));
+    --surface-strong: color-mix(in oklch, var(--argent) 78%, var(--aegean-deep));
+    --surface-card: color-mix(in oklch, var(--argent) 94%, var(--paper));
+    --surface-tint: color-mix(in oklch, var(--argent) 86%, var(--terracotta));
+    --surface-cool: color-mix(in oklch, var(--argent) 86%, var(--santorini-cyan));
+    --surface-olive: color-mix(in oklch, var(--argent) 84%, var(--olive-victor));
+    --shadow-soft: 0 24px 60px color-mix(in oklch, var(--ink) 12%, transparent);
+    --shadow-float: 0 16px 36px color-mix(in oklch, var(--ink) 10%, transparent);
+    --st-shipping: var(--olive-victor);
+    --st-todo: var(--ink-soft);
+    --st-done: var(--aegean-deep);
+}
+
+html[data-theme="dark"] {
+    --bg: var(--ink);
+    --fg: var(--argent);
+    --soft: var(--rule);
+    --faint: var(--rule-soft);
+    --line: var(--rule);
+    --accent: var(--blue-bavarian);
+
+    /* Dark surfaces. `color-mix` against `--bg=ink` keeps the hover
+     * tint a shade above the page background while still being darker
+     * than the foreground text, so the legibility contract from the
+     * light theme is mirrored here (subtle hover, readable text). */
+    --surface: color-mix(in oklch, var(--bg) 88%, var(--argent));
+    --surface-hover: color-mix(in oklch, var(--bg) 80%, var(--accent));
+    --surface-strong: color-mix(in oklch, var(--bg) 70%, var(--accent));
+    --surface-card: color-mix(in oklch, var(--bg) 86%, var(--argent));
+    --surface-tint: color-mix(in oklch, var(--bg) 76%, var(--terracotta));
+    --surface-cool: color-mix(in oklch, var(--bg) 74%, var(--santorini-cyan));
+    --surface-olive: color-mix(in oklch, var(--bg) 76%, var(--olive-victor));
+    --shadow-soft: 0 28px 70px color-mix(in oklch, black 36%, transparent);
+    --shadow-float: 0 16px 40px color-mix(in oklch, black 28%, transparent);
+    --st-shipping: color-mix(in oklch, var(--olive-victor) 45%, var(--argent));
+    --st-todo: var(--rule);
+    --st-done: var(--blue-bavarian);
+}

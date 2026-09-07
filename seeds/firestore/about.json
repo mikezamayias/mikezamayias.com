@@ -1,0 +1,16 @@
+{
+    "name": { "en": "Mike Zamayias", "el": "Μιχάλης Ζαμαγίας" },
+    "role": { "en": "Independent software engineer", "el": "Ανεξάρτητος μηχανικός λογισμικού" },
+    "location": { "en": "Heraklion, Crete", "el": "Ηράκλειο, Κρήτη" },
+    "stacks": { "en": "Flutter · Nuxt · TypeScript", "el": "Flutter · Nuxt · TypeScript" },
+    "current": { "en": "Healpen, this site", "el": "Healpen, αυτό το site" },
+    "years": { "en": "8 years shipping production code", "el": "8 χρόνια κώδικα σε παραγωγή" },
+    "intro": {
+        "en": "A short biography, mostly true.",
+        "el": "Σύντομο βιογραφικό — λίγο πολύ αληθινό."
+    },
+    "bio": {
+        "en": "Mobile engineer in Heraklion, Crete. I ship my own apps: Healpen, Peakward, and Mighty.",
+        "el": "Μηχανικός mobile στο Ηράκλειο, Κρήτη. Φτιάχνω και κυκλοφορώ τις δικές μου εφαρμογές: Healpen, Peakward και Mighty."
+    }
+}

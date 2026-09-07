@@ -1,0 +1,36 @@
+version: 2
+updates:
+    # JavaScript dependencies (Dependabot uses the npm ecosystem for Bun projects)
+    - package-ecosystem: "npm"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 5
+      commit-message:
+          prefix: "deps"
+      labels:
+          - "dependencies"
+      groups:
+          nuxt:
+              patterns:
+                  - "@nuxt/*"
+                  - "nuxt"
+                  - "nuxt-*"
+          dev-dependencies:
+              dependency-type: "development"
+              update-types:
+                  - "minor"
+                  - "patch"
+
+    # GitHub Actions
+    - package-ecosystem: "github-actions"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      commit-message:
+          prefix: "ci"
+      labels:
+          - "ci"
+          - "dependencies"

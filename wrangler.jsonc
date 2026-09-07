@@ -1,0 +1,42 @@
+{
+    // Cloudflare Worker that serves mikezamayias.com.
+    //
+    // This file did not exist until now: the Worker was created and deployed
+    // by hand with `wrangler deploy`, 13 times, with no configuration in the
+    // repository. The values below were read back from the live Worker and
+    // its routes so that `wrangler deploy` from a clean checkout reproduces
+    // what is already running.
+    //
+    // The one deliberate difference: `not_found_handling` was unset (default
+    // "none"), so unknown paths returned a zero-byte 404. "404-page" serves
+    // the site's own prerendered 404.html instead.
+    //
+    // Do NOT use "single-page-application": that mode serves index.html with
+    // a 200, so every unknown path would return the home page.
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "personal-website-v1",
+    "account_id": "e2307e8414d6358345df0c4fa290ba08",
+    "compatibility_date": "2026-06-20",
+    // The Worker exists for exactly one route (POST /api/contact).
+    // `run_worker_first` is left at its default false so asset requests never invoke it.
+    // Everything the Worker does see is handed straight back to the assets binding so
+    // `not_found_handling` and `html_handling` keep working.
+    "main": "worker/index.ts",
+    // `html_handling` was unset, so it defaulted to "auto-trailing-slash".
+    // Every prerendered route is a directory (`work/index.html`), so `/work`
+    // 307'd to `/work/`. sitemap.xml advertises the slash-less form and Nuxt
+    // routes without a trailing slash, so every indexed URL cost a redirect
+    // and the post-deploy smoke test read those 307s as failures.
+    // "drop-trailing-slash" serves `work/index.html` at `/work` directly and
+    // redirects the other way, which is the form the rest of the site uses.
+    "assets": {
+        "binding": "ASSETS",
+        "directory": ".output/public",
+        "not_found_handling": "404-page",
+        "html_handling": "drop-trailing-slash",
+    },
+    "routes": [
+        { "pattern": "mikezamayias.com/*", "zone_name": "mikezamayias.com" },
+        { "pattern": "www.mikezamayias.com/*", "zone_name": "mikezamayias.com" },
+    ],
+}

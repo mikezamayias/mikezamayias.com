@@ -1,0 +1,46 @@
+title = "Codex secret rules"
+
+[allowlist]
+# Anchored to full-path matches to prevent allowlist bypass via
+# crafted names like `something/.env.example.real`.
+paths = [
+    "^bun\\.lock$",
+    "^package-lock\\.json$",
+    "^\\.gitleaks\\.toml$",
+]
+
+[[rules]]
+id = "firebase-service-account"
+description = "Firebase service account JSON"
+regex = '''"private_key":\s*"-----BEGIN PRIVATE KEY-----'''
+tags = ["firebase", "high"]
+
+[[rules]]
+id = "firebase-api-key"
+description = "Firebase Web API key"
+regex = '''AIza[0-9A-Za-z\-_]{35}'''
+tags = ["firebase", "medium"]
+
+[[rules]]
+id = "env-file"
+description = ".env file with values"
+path = '''^\.env(\..+)?$'''
+tags = ["env", "high"]
+[rules.allowlist]
+# Rule-scoped allowlist (only the env-file path heuristic skips here)
+# — the content-based rules above (firebase-service-account,
+# firebase-api-key, openai-key, etc.) still scan every byte of the
+# allowlisted file. If a plaintext token ever sneaks into a SOPS file
+# (forgotten `sops -e`, accidental paste from decrypted output) the
+# other rules fire on the actual secret regex. Only the dumb
+# path-matches-env heuristic is exempted.
+paths = [
+    '''^\.env[^/]*\.sops\.ya?ml$''',
+    '''^secrets/[^/]+\.sops\.ya?ml$''',
+]
+
+[[rules]]
+id = "openai-key"
+description = "OpenAI API key"
+regex = '''sk-[A-Za-z0-9]{32,}'''
+tags = ["openai", "high"]

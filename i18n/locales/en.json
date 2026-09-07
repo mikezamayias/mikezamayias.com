@@ -1,0 +1,127 @@
+{
+    "nav": {
+        "home": "Home",
+        "work": "Work",
+        "writing": "Writing",
+        "about": "About",
+        "contact": "Contact"
+    },
+    "meta": {
+        "description": {
+            "home": "Mike Zamayias, mobile engineer in Heraklion, Crete. Flutter and native Android apps."
+        }
+    },
+    "a11y": {
+        "skip": "Skip to content",
+        "lang": "Language",
+        "primaryNav": "Primary navigation",
+        "theme": "Theme",
+        "themeLight": "Switch to light theme",
+        "themeDark": "Switch to dark theme",
+        "themeToggle": "Toggle theme",
+        "themeOptions": "Theme options",
+        "menuToggle": "Open navigation menu"
+    },
+    "theme": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+    },
+    "footer": {
+        "copy": "© 2026 Mike Zamayias",
+        "set": "Set in JetBrains Mono"
+    },
+    "error": {
+        "line": "This section did not load.",
+        "detail": "Check your connection and try again.",
+        "retry": "Try again",
+        "page": {
+            "title404": "404, page not found",
+            "kicker404": "404",
+            "heading404": "This page is not here.",
+            "lede404": "The address may be old or mistyped.",
+            "titleGeneric": "Something went wrong",
+            "kickerGeneric": "Error",
+            "headingGeneric": "Something went wrong.",
+            "ledeGeneric": "The request failed. Try again, or go back to the home page.",
+            "home": "Back to home"
+        }
+    },
+    "consent": {
+        "title": "Analytics",
+        "text": "This site uses Google Analytics to count visits. No ads, no other trackers.",
+        "allow": "Allow",
+        "deny": "No"
+    },
+    "page": {
+        "work": {
+            "heading": "Work",
+            "notFound": "Work entry not found."
+        },
+        "writing": {
+            "heading": "Writing",
+            "notFound": "Writing entry not found.",
+            "bodyUnavailable": "The post did not load. Refresh to try again."
+        },
+        "contact": {
+            "kicker": "Contact",
+            "heading": "Get in touch",
+            "lede": "Questions about an app, Flutter, or Android? Write to me.",
+            "email": "contact{'@'}mikezamayias.com",
+            "formTitle": "Your message",
+            "name": "Name",
+            "emailLabel": "Email",
+            "subject": "Subject",
+            "message": "Message",
+            "successTitle": "Sent",
+            "successText": "I reply within a few days.",
+            "sendAnother": "Send another"
+        }
+    },
+    "about": {
+        "role": "Role",
+        "location": "Location",
+        "stacks": "Stacks",
+        "current": "Now",
+        "years": "Since",
+        "experience": "Experience",
+        "skills": "Skills",
+        "education": "Education",
+        "certifications": "Certifications",
+        "links": "Links",
+        "present": "present"
+    },
+    "section": {
+        "work": {
+            "heading": "Work"
+        },
+        "writing": {
+            "heading": "Writing"
+        },
+        "roadmap": {
+            "heading": "Roadmap",
+            "status": {
+                "shipping": "shipping",
+                "todo": "to do",
+                "done": "done",
+                "blocked": "blocked"
+            },
+            "priority": {
+                "high": "high",
+                "medium": "medium",
+                "low": "low"
+            }
+        },
+        "about": {
+            "heading": "About"
+        },
+        "contact": {
+            "heading": "Get in touch",
+            "lede": "Questions about an app, Flutter, or Android? Write to me.",
+            "cta": {
+                "start": "Send a message",
+                "email": "Email me"
+            }
+        }
+    }
+}

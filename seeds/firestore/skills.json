@@ -1,0 +1,14 @@
+[
+    { "id": "flutter", "name": "Flutter", "category": "framework", "proficiency": 5, "order": 0 },
+    { "id": "nuxt", "name": "Nuxt", "category": "framework", "proficiency": 5, "order": 1 },
+    { "id": "firebase", "name": "Firebase", "category": "platform", "proficiency": 5, "order": 2 },
+    {
+        "id": "typescript",
+        "name": "TypeScript",
+        "category": "language",
+        "proficiency": 5,
+        "order": 3
+    },
+    { "id": "swift", "name": "Swift", "category": "language", "proficiency": 4, "order": 4 },
+    { "id": "sentry", "name": "Sentry", "category": "tool", "proficiency": 4, "order": 5 }
+]

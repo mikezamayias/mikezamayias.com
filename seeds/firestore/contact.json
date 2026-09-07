@@ -1,0 +1,9 @@
+{
+    "email": "contact@mikezamayias.com",
+    "timezone": "Europe/Athens",
+    "availability": {
+        "en": "Open to focused product builds and technical rescue work.",
+        "el": "Διαθέσιμος για στοχευμένα product builds και τεχνική υποστήριξη έργων."
+    },
+    "preferredChannel": "email"
+}

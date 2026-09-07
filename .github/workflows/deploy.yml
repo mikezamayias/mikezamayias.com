@@ -1,0 +1,404 @@
+name: Deploy
+
+on:
+    push:
+        branches: [prod]
+    # Publishing content is a rebuild: the site serves a build-time snapshot
+    # of Firestore, so an admin edit goes live when this workflow runs.
+    # Kept input-free so it is one tap from the GitHub mobile app.
+    workflow_dispatch:
+
+concurrency:
+    group: deploy-${{ github.ref }}
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+    id-token: write
+
+# Runtime secrets from `.env.shared.sops.yaml` — SOPS-encrypted with
+# the age recipient in `.sops.yaml`. Build + Functions env steps
+# decrypt via SOPS (dotenv format). The Firebase service
+# account lives in `secrets/firebase-service-account.sops.yaml`. The
+# only GitHub secret this workflow needs is SOPS_AGE_KEY, scoped
+# per step to only the steps that decrypt.
+# Replaces the prior Infisical-Universal-Auth flow.
+
+jobs:
+    build-and-deploy:
+        name: Build & Deploy to Production
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        environment:
+            name: production
+            url: https://mikezamayias.com
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+              with:
+                  frozen-lockfile: "false"
+
+            - name: Install SOPS
+              run: |
+                  curl -fsSL -o /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_amd64.deb
+                  sudo dpkg -i /tmp/sops.deb
+                  sops --version
+
+            # Build sources Firebase Web SDK config + Sentry source-map
+            # upload credentials by `source`-ing the SOPS-decrypted
+            # dotenv stream. The decrypted file never touches disk —
+            # process substitution `<(...)` pipes it directly. GH-only
+            # legacy secrets (GitHub CMS) layered on top via the `env:`
+            # block; those will move into `.env.shared.sops.yaml` when
+            # Plan F retires the legacy admin.
+            - name: Build for SSR
+              # Gates production-only Sentry ingest (see sentry.server.config.ts
+              # and sentry.client.config.ts). NODE_ENV is "production" for every
+              # Nuxt build artifact and so cannot distinguish the production
+              # deploy from CI staging previews — this explicit signal can.
+              run: |
+                  set -a
+                  source <(sops -d --output-type dotenv .env.shared.sops.yaml)
+                  set +a
+                  bun run build
+              env:
+                  NUXT_PUBLIC_APP_ENV: production
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+            - name: Fix server package.json for Cloud Build
+              run: |
+                  cd .output/server
+                  # 1. Fix engines.node from bare "22" to "22.x" for semver compat.
+                  # 2. Strip platform-specific native deps the macOS arm64 self-hosted
+                  #    runner injected. Cloud Build runs Linux x64 and chokes with
+                  #    EBADPLATFORM. The parent packages declare optionalDependencies
+                  #    for every platform, so npm on Cloud Build picks the right one
+                  #    automatically once the explicit darwin pin is gone.
+                  #    Currently catches @resvg/resvg-js-darwin-* (satori OG renderer).
+                  node -e "
+                    const fs = require('fs');
+                    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
+                    let changed = false;
+                    if (pkg.engines?.node && /^\d+$/.test(pkg.engines.node)) {
+                      pkg.engines.node = pkg.engines.node + '.x';
+                      changed = true;
+                      console.log('Fixed engines.node to ' + pkg.engines.node);
+                    }
+                    const platformDepRe = /^(@resvg\/resvg-js|@swc\/core|@napi-rs\/\w+|@rollup\/rollup|@parcel\/watcher|esbuild|sharp|sass-embedded)-(darwin|linux|win32|android|freebsd)(-|$)/;
+                    for (const name of Object.keys(pkg.dependencies || {})) {
+                      if (platformDepRe.test(name)) {
+                        delete pkg.dependencies[name];
+                        changed = true;
+                        console.log('Stripped platform-specific dep: ' + name);
+                      }
+                    }
+                    if (changed) fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+                  "
+
+            - name: Prepare Server Dependencies
+              run: |
+                  cd .output/server/node_modules
+
+                  # Nitro uses a .nitro/ store with symlinks (like pnpm).
+                  # Replace symlinks with actual directory copies for
+                  # Cloud Build / Firebase Functions deploy compatibility.
+                  find . -maxdepth 4 -type l | while read -r link; do
+                    target=$(readlink -f "$link")
+                    if [ -d "$target" ]; then
+                      rm "$link"
+                      cp -R "$target" "$link"
+                    fi
+                  done
+
+                  # Remove the .nitro store (now redundant)
+                  rm -rf .nitro
+
+                  # Nitro only traces imports it can see statically.
+                  # firebase-functions dynamically imports firebase-admin ESM
+                  # submodules (auth, etc.) that Nitro misses.
+                  # Copy the full packages from the project's node_modules.
+                  cd ..
+                  for pkg in firebase-admin firebase-functions; do
+                    if [ -d "../../node_modules/$pkg" ]; then
+                      rm -rf "node_modules/$pkg"
+                      cp -R "../../node_modules/$pkg" "node_modules/$pkg"
+                    fi
+                  done
+
+                  # Remove any lockfiles to avoid bun migration issues
+                  rm -f package-lock.json
+
+            - name: Decrypt Firebase service account (SOPS + age)
+              id: creds
+              env:
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+              run: |
+                  set -euo pipefail
+                  SA_JSON=$(sops -d --extract '["service_account_json"]' secrets/firebase-service-account.sops.yaml)
+                  echo "::add-mask::$SA_JSON"
+                  printf '%s' "$SA_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);for (const v of Object.values(j)) for (const l of String(v).split("\n")) if (l.trim()) console.log("::add-mask::"+l);});'
+                  {
+                    echo "json<<SA_EOF"
+                    echo "$SA_JSON"
+                    echo "SA_EOF"
+                  } >> "$GITHUB_OUTPUT"
+
+            - name: Authenticate to Google Cloud
+              uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+              with:
+                  credentials_json: ${{ steps.creds.outputs.json }}
+
+            - name: Create Functions Environment
+              # SOPS decrypts every shared secret to KEY=value.
+              # Contact form values (Brevo key, recipient, sender)
+              # live in the same file as NUXT_*
+              # keys, so no GitHub secrets are needed here. The Cloud
+              # Functions runtime reads .output/server/.env on cold
+              # start, so this file must contain plaintext.
+              # SENTRY_AUTH_TOKEN is filtered out below — it is build/CI-only
+              # and would otherwise sit in plaintext in the gcf-sources-*
+              # bucket for the life of the deployment.
+              env:
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+              run: |
+                  mkdir -p .output/server
+                  sops -d --output-type dotenv .env.shared.sops.yaml \
+                    | grep -vE '^SENTRY_AUTH_TOKEN=' > .output/server/.env
+                  chmod 600 .output/server/.env
+
+            - name: Install Functions Dependencies
+              run: |
+                  cd .output/server
+                  # Remove package-lock.json so Cloud Build uses Bun only
+                  rm -f package-lock.json
+                  bun install --production --ignore-scripts
+
+            - name: Deploy to Firebase
+              run: bunx firebase deploy --only hosting,functions --project personal-website-v1-f775a --force
+
+            - name: Deployment Summary
+              run: |
+                  echo "## 🚀 Deployment Complete" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+                  echo "**URL:** https://mikezamayias.com" >> $GITHUB_STEP_SUMMARY
+                  echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+                  echo "**Deployed by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+    rules:
+        name: Firestore Rules Tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: Set up JDK for the Firestore emulator
+              uses: actions/setup-java@v5
+              with:
+                  distribution: temurin
+                  java-version: "21"
+
+            - name: Run Firestore Rules Tests
+              run: bun run test:rules
+
+    deploy-rules:
+        name: Deploy Firestore Rules
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        needs: rules
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: Install SOPS
+              run: |
+                  curl -fsSL -o /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_amd64.deb
+                  sudo dpkg -i /tmp/sops.deb
+                  sops --version
+
+            - name: Decrypt Firebase service account (SOPS + age)
+              id: creds
+              env:
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+              run: |
+                  set -euo pipefail
+                  SA_JSON=$(sops -d --extract '["service_account_json"]' secrets/firebase-service-account.sops.yaml)
+                  echo "::add-mask::$SA_JSON"
+                  printf '%s' "$SA_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);for (const v of Object.values(j)) for (const l of String(v).split("\n")) if (l.trim()) console.log("::add-mask::"+l);});'
+                  {
+                    echo "json<<SA_EOF"
+                    echo "$SA_JSON"
+                    echo "SA_EOF"
+                  } >> "$GITHUB_OUTPUT"
+
+            - name: Authenticate to Google Cloud
+              uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+              with:
+                  credentials_json: ${{ steps.creds.outputs.json }}
+
+            # Deploys Firestore rules, Firestore indexes, and Storage rules. The default
+            # bucket (personal-website-v1-f775a.firebasestorage.app) now exists in EUROPE-WEST1.
+            # Its previous rules were Firebase's deny-all default. The repo rules deliberately
+            # grant public read on work/** and writing/** because those are images for public
+            # pages, with writes restricted to an admin uid, 5 MB and three image types
+            # (png, jpeg, webp). The Storage target is bare `storage`, not `storage:<rules>`,
+            # because `storage:<x>` selects a named target rather than a component.
+            - name: Deploy Firestore Rules & Indexes
+              run: bunx firebase deploy --only firestore:rules,firestore:indexes,storage --project personal-website-v1-f775a
+
+    # Deploys the Cloudflare Worker that actually serves mikezamayias.com.
+    # Until now this was done by hand: 13 `wrangler deploy` runs from a
+    # laptop, with no configuration in the repository. Config now lives in
+    # wrangler.jsonc at the repo root.
+    #
+    # This builds with `bun run generate` (NITRO_PRESET=static), NOT the
+    # `bun run build` used for the Firebase SSR deploy — the Worker serves
+    # static assets only. Both builds run during the migration; the Firebase
+    # half is removed in a later phase.
+    #
+    # To roll back a bad deploy: `bunx wrangler rollback <version-id>`,
+    # version ids from `bunx wrangler versions list --name personal-website-v1`.
+    deploy-worker:
+        name: Deploy Cloudflare Worker
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        outputs:
+            version_id: ${{ steps.worker_deploy.outputs.version_id }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Setup toolchain
+              uses: ./.github/actions/setup-bun
+
+            - name: Install SOPS
+              run: |
+                  curl -fsSL -o /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_amd64.deb
+                  sudo dpkg -i /tmp/sops.deb
+                  sops --version
+
+            - name: Build static output
+              env:
+                  NUXT_PUBLIC_APP_ENV: production
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+              run: |
+                  set -a
+                  source <(sops -d --output-type dotenv .env.shared.sops.yaml)
+                  set +a
+                  bun run generate
+
+            - name: Verify build output is not empty
+              run: |
+                  set -euo pipefail
+                  test -s .output/public/index.html
+                  count=$(find .output/public -type f | wc -l)
+                  echo "$count files in .output/public"
+                  [ "$count" -gt 10 ]
+
+                  # Every prerendered admin route must be a real SPA shell. A middleware
+                  # redirect during prerender produces a 98-byte meta-refresh stub instead,
+                  # which bounces signed-in admins before hydration. Caught here, not in prod.
+                  stubs=0
+                  for f in $(find .output/public/admin -name index.html); do
+                    if ! grep -q 'id="__nuxt"' "$f" || [ "$(wc -c <"$f")" -lt 10000 ]; then
+                      echo "STUB: $f ($(wc -c <"$f") bytes)"; stubs=$((stubs+1))
+                    fi
+                  done
+                  [ "$stubs" -eq 0 ] || { echo "$stubs admin shell(s) are redirect stubs"; exit 1; }
+                  echo "$(find .output/public/admin -name index.html | wc -l) admin shells verified"
+
+            - name: Deploy Worker
+              id: worker_deploy
+              env:
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+              run: |
+                  set -euo pipefail
+                  CLOUDFLARE_API_TOKEN=$(sops -d --extract '["CLOUDFLARE_API_TOKEN"]' .env.shared.sops.yaml)
+                  echo "::add-mask::$CLOUDFLARE_API_TOKEN"
+                  export CLOUDFLARE_API_TOKEN
+
+                  API="https://api.cloudflare.com/client/v4/accounts/e2307e8414d6358345df0c4fa290ba08/workers/scripts/personal-website-v1/deployments"
+                  before=$(curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" | jq -r '.result.deployments[0].id // "none"')
+
+                  # Worker secrets pushed to Cloudflare for runtime access, distinct from
+                  # the Functions .env. `wrangler secret put` is idempotent so re-running the deploy is safe.
+                  for pair in \
+                      "TURNSTILE_SECRET_KEY:TURNSTILE_SECRET_KEY" \
+                      "BREVO_API_KEY:NUXT_BREVO_API_KEY" \
+                      "CONTACT_EMAIL:NUXT_CONTACT_EMAIL" \
+                      "CONTACT_FROM_EMAIL:NUXT_CONTACT_FROM_EMAIL" \
+                      "CONTACT_BCC_EMAIL:NUXT_CONTACT_BCC_EMAIL"; do
+                    worker_name="${pair%%:*}"
+                    sops_key="${pair##*:}"
+                    value=$(sops -d --extract "[\"$sops_key\"]" .env.shared.sops.yaml)
+                    echo "::add-mask::$value"
+                    printf '%s' "$value" | bunx wrangler secret put "$worker_name"
+                  done
+
+                  bunx wrangler deploy
+
+                  after=$(curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" | jq -r '.result.deployments[0].id')
+                  version=$(curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" | jq -r '.result.deployments[0].versions[0].version_id')
+
+                  if [ "$after" = "$before" ]; then
+                    echo "FAIL wrangler deploy did not create a new deployment (still $after)"
+                    exit 1
+                  fi
+                  echo "Deployed version $version (deployment $after, was $before)"
+                  echo "version_id=$version" >> "$GITHUB_OUTPUT"
+
+    post-deploy:
+        name: Post-Deploy Validation
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        # Verifies via the Cloudflare API that the version deployed by deploy-worker is the one currently serving.
+        needs: [build-and-deploy, deploy-worker]
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Install SOPS
+              run: |
+                  curl -fsSL -o /tmp/sops.deb https://github.com/getsops/sops/releases/download/v3.13.3/sops_3.13.3_amd64.deb
+                  sudo dpkg -i /tmp/sops.deb
+                  sops --version
+
+            - name: Verify the deployed version is live
+              # This job runs on a GitHub-hosted runner, i.e. an Azure datacenter IP.
+              # Cloudflare answers those with 403 regardless of site health, and Bot
+              # Fight Mode cannot be excluded by a WAF rule, so an HTTP smoke test from
+              # here measures the runner's IP reputation rather than the deploy.
+              # Known limitation, stated plainly: this verifies that the version this run
+              # built is the version now serving. It does NOT verify that pages render.
+              env:
+                  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+                  EXPECTED_VERSION: ${{ needs.deploy-worker.outputs.version_id }}
+              run: |
+                  set -euo pipefail
+                  CLOUDFLARE_API_TOKEN=$(sops -d --extract '["CLOUDFLARE_API_TOKEN"]' .env.shared.sops.yaml)
+                  echo "::add-mask::$CLOUDFLARE_API_TOKEN"
+
+                  if [ -z "$EXPECTED_VERSION" ]; then
+                    echo "FAIL deploy-worker did not report a version id"
+                    exit 1
+                  fi
+
+                  live=$(curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                    "https://api.cloudflare.com/client/v4/accounts/e2307e8414d6358345df0c4fa290ba08/workers/scripts/personal-website-v1/deployments" \
+                    | jq -r '.result.deployments[0].versions[0].version_id')
+
+                  if [ "$live" != "$EXPECTED_VERSION" ]; then
+                    echo "FAIL live version is $live, expected $EXPECTED_VERSION"
+                    exit 1
+                  fi
+                  echo "OK live Worker version is $live"

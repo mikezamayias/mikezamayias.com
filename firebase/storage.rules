@@ -1,0 +1,38 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // slug regex `^[a-z0-9-]+$` — reject anything else.
+    // Rules CEL doesn't expose a regex match on the path variable directly,
+    // so we re-check via .matches() on the full path.
+    function isSafeSlug(s) {
+      return s.matches('^[a-z0-9-]+$');
+    }
+
+    // Public read of work + writing images
+    match /work/{slug}/{file=**} {
+      allow read: if isSafeSlug(slug);
+      allow write: if isSafeSlug(slug)
+        && request.auth != null
+        && request.auth.uid in firestore.get(
+            /databases/(default)/documents/settings/main).data.allowedAdminIds
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)');
+    }
+
+    match /writing/{slug}/{file=**} {
+      allow read: if isSafeSlug(slug);
+      allow write: if isSafeSlug(slug)
+        && request.auth != null
+        && request.auth.uid in firestore.get(
+            /databases/(default)/documents/settings/main).data.allowedAdminIds
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)');
+    }
+
+    // Default deny.
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

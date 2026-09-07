@@ -1,0 +1,31 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "work",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "published", "order": "ASCENDING" },
+                { "fieldPath": "locales_available", "arrayConfig": "CONTAINS" },
+                { "fieldPath": "order", "order": "ASCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "writing",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "published", "order": "ASCENDING" },
+                { "fieldPath": "locales_available", "arrayConfig": "CONTAINS" },
+                { "fieldPath": "date", "order": "DESCENDING" }
+            ]
+        },
+        {
+            "collectionGroup": "roadmap",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "hidden", "order": "ASCENDING" },
+                { "fieldPath": "order", "order": "ASCENDING" }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}

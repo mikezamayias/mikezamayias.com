@@ -1,0 +1,34 @@
+{
+    "cycle": {
+        "en": ["Careful systems.", "Shipped slowly.", "Written about, too."],
+        "el": ["Προσεγμένα συστήματα.", "Σταδιακά, με προσοχή.", "Γράφω και γι' αυτά."]
+    },
+    "lede": {
+        "en": {
+            "before": "Flutter and native Android, ",
+            "highlight": "from first wireframe to store release",
+            "after": "."
+        },
+        "el": {
+            "before": "Flutter και native Android, ",
+            "highlight": "από το πρώτο wireframe μέχρι το store release",
+            "after": "."
+        }
+    },
+    "meta": {
+        "en": {
+            "stack": "flutter · nuxt · jetpack compose",
+            "location": "based in Heraklion · Crete",
+            "audience": "solo founders · small teams"
+        },
+        "el": {
+            "stack": "flutter · nuxt · jetpack compose",
+            "location": "Ηράκλειο · Κρήτη",
+            "audience": "solo founders · μικρές ομάδες"
+        }
+    },
+    "cta": {
+        "en": { "primary": "Start a project", "secondary": "Read the writing" },
+        "el": { "primary": "Ξεκινάμε ένα έργο", "secondary": "Διαβάστε τα κείμενα" }
+    }
+}

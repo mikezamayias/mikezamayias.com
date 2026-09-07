@@ -1,0 +1,34 @@
+[
+    {
+        "slug": "hello-world",
+        "date": "2026-02-19",
+        "tags": ["personal", "meta"],
+        "read": 2,
+        "published": true,
+        "locales_available": ["en"],
+        "order": 0,
+        "locale": {
+            "en": {
+                "title": "Hello World: Welcome to My Blog",
+                "sub": "A first post introducing my new blog — a space for thoughts on software engineering, mobile development, and lessons learned along the way.",
+                "body": "Welcome to my blog! I've been meaning to start writing for a while now, and I'm excited to finally have a space to share my thoughts.\n\n## Why Blog?\n\nAs a software engineer, I spend most of my time solving problems, learning new things, and building applications. Writing helps me crystallise those experiences into something concrete — and if it helps someone else along the way, even better.\n\n## What to Expect\n\nI plan to write about:\n\n- **Mobile development** — Android, Flutter, Jetpack Compose, and the patterns that make apps shine\n- **Web technologies** — Nuxt, Vue, and the modern frontend ecosystem\n- **Software architecture** — clean code, testing strategies, and design decisions\n- **Career reflections** — lessons from working in teams, shipping products, and growing as an engineer\n\n## A Quick Code Example\n\nSince this is a developer blog, here's a taste of what posts might look like — complete with code snippets:\n\n```kotlin\nfun greet(name: String): String {\n    return \"Hello, $name! Welcome to the blog.\"\n}\n\nfun main() {\n    println(greet(\"World\"))\n}\n```\n\n## Stay Tuned\n\nThis is just the beginning. I have a backlog of topics I'm eager to explore, and I'll be posting regularly. If there's something you'd like me to write about, feel free to reach out.\n\nThanks for reading — see you in the next post!"
+            }
+        }
+    },
+    {
+        "slug": "portfolio-updates-march-2026",
+        "date": "2026-03-13",
+        "tags": ["famon", "peakward", "portfolio", "firebase", "flutter", "beta"],
+        "read": 3,
+        "published": true,
+        "locales_available": ["en"],
+        "order": 1,
+        "locale": {
+            "en": {
+                "title": "Portfolio Updates: Famon Fixes, New Blog, and Peakward Beta",
+                "sub": "Three updates — bug fixes for my Firebase Analytics CLI tool, a brand new blog feature on my portfolio, and open invitations to test my running app Peakward on TestFlight.",
+                "body": "I've been quiet on the publishing front, but that doesn't mean I haven't been shipping. Here's what's new across three projects I've been building.\n\n## Famon: Firebase Analytics Monitoring, Now in Your Terminal\n\nI never actually announced this properly when it launched, so let's fix that.\n\n**Famon** is an open-source Dart CLI tool that streams Firebase Analytics events from your Android or iOS app straight to your terminal in real-time. No more switching contexts — see your analytics logs right inside your editor while you debug.\n\n```bash\n# Install from pub.dev\ndart pub global activate famon\n\n# Start monitoring\nfamon monitor\n```\n\nThe tool gives you smart filtering, session statistics, and persistent storage via Isar. Recent updates fixed a critical bug where keyboard shortcuts weren't working — quit and Ctrl+C now respond immediately instead of hanging until new log data arrives. Also improved parsing for native Firebase events and tightened security based on an audit I ran last month.\n\nThere's also a new `famon issue` command that opens your browser to submit bug reports directly from the CLI, complete with auto-collected system info.\n\n[View on pub.dev](https://pub.dev/packages/famon) · [GitHub](https://github.com/mikezamayias/famon)\n\n## Peakward TestFlight: Join the Beta\n\n**Peakward** is a running and fitness app I've been building with Flutter. It syncs with Apple HealthKit and Strava, then uses AI (Google Gemini + Apple Foundation Models) to generate personalized daily briefs that factor in your training load, weather conditions, and goals.\n\nRecent work added some features I'm particularly happy with:\n\n- **Prediction trend charts** showing how your fitness is trending over time\n- **Training status badges** that surface whether you're building fitness, maintaining, or need recovery\n- **TSB-aware predictions** that adjust race time estimates based on your current training stress balance (TSB = fitness level minus fatigue — positive means you're rested and ready to perform, negative means you're carrying training load)\n- Support for six training methodologies: Daniels' Running Formula, MAF, 80/20, and more\n- **Dashboard fix in 0.15.6** — Resolved a critical dependency injection bug that was causing a grey screen after onboarding. The app now properly initializes all cubits before the dashboard renders.\n\nThe beta is open. If you're a runner with an iPhone, I'd love feedback on the AI coaching and training plan generation.\n\n[Join Beta TestFlight](https://testflight.apple.com/join/vg7K8ZA5)\n\n## This Blog Now Exists\n\nMy portfolio site (the one you're reading this on) now has a working blog section. It's built with Nuxt 4 and Vue 3, and posts are written in Markdown with frontmatter — simple enough that there's no friction to publishing.\n\nThe nice part: this blog has an RSS feed that auto-posts to LinkedIn, dev.to, and Medium. Write once, publish everywhere.\n\nI'll be posting here regularly about mobile development, architecture decisions, and lessons from shipping these projects. If there's something specific you'd like me to cover, reach out.\n\n---\n\nThanks for reading. If any of these projects sound interesting, check them out and let me know what you think."
+            }
+        }
+    }
+]

@@ -1,0 +1,37 @@
+{
+    "_comment": [
+        "Exported from Cloudflare, zone mikezamayias.com, phase http_request_firewall_custom.",
+        "Review and drift-detection artifact only — nothing reads this at deploy time.",
+        "Volatile fields (version, last_updated, per-rule id) are omitted so diffs show intent.",
+        "Re-export instructions: see README.md in this directory."
+    ],
+    "zone": "mikezamayias.com",
+    "ruleset": {
+        "name": "Personal website custom WAF",
+        "phase": "http_request_firewall_custom",
+        "kind": "zone"
+    },
+    "rules": [
+        {
+            "description": "Block deployed metadata helper files for personal website",
+            "expression": "(http.host in {\"mikezamayias.com\" \"www.mikezamayias.com\"} and http.request.uri.path in {\"/_headers\" \"/_redirects\"})",
+            "action": "block",
+            "enabled": true,
+            "ref": "personal_website_block_metadata"
+        },
+        {
+            "description": "Block non-static HTTP methods for personal website",
+            "expression": "(http.host in {\"mikezamayias.com\" \"www.mikezamayias.com\"} and not http.request.method in {\"GET\" \"HEAD\" \"OPTIONS\"})",
+            "action": "block",
+            "enabled": true,
+            "ref": "personal_website_block_non_static_methods"
+        },
+        {
+            "description": "Block common scanner paths for personal website",
+            "expression": "(http.host in {\"mikezamayias.com\" \"www.mikezamayias.com\"} and (starts_with(http.request.uri.path, \"/.env\") or starts_with(http.request.uri.path, \"/wp-\") or ends_with(http.request.uri.path, \".php\")))",
+            "action": "block",
+            "enabled": true,
+            "ref": "personal_website_block_scanner_paths"
+        }
+    ]
+}

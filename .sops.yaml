@@ -1,0 +1,21 @@
+# SOPS configuration — encrypted-secrets policy for personal-website-v1.
+#
+# Files matching `path_regex` are encrypted with the listed age recipients.
+# Encryption only touches values; keys stay readable so `git diff` is useful.
+#
+# Recipients (age public keys, safe to commit):
+#   age1093dsl8uyjk3eqplt5lm2xuz5kzhah2dz2r5twunhgu9sc2mz3jsxjs58w  # mzamagias@Mac (primary)
+#
+# Add more recipients (CI bot, second laptop, team member) by appending to
+# the `age:` field below — separated by commas. After adding, re-encrypt every
+# file with `sops updatekeys <file>` so the new recipient can decrypt.
+#
+# Private key location (DO NOT commit): ~/.config/sops/age/keys.txt
+# CI reads the private key from the `SOPS_AGE_KEY` GitHub Secret.
+creation_rules:
+    - path_regex: \.env(\.[a-zA-Z0-9_-]+)?\.sops\.ya?ml$
+      age: >-
+          age1093dsl8uyjk3eqplt5lm2xuz5kzhah2dz2r5twunhgu9sc2mz3jsxjs58w
+    - path_regex: secrets/.*\.ya?ml$
+      age: >-
+          age1093dsl8uyjk3eqplt5lm2xuz5kzhah2dz2r5twunhgu9sc2mz3jsxjs58w

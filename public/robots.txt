@@ -1,0 +1,6 @@
+# robots.txt for mikezamayias.com
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://mikezamayias.com/sitemap.xml

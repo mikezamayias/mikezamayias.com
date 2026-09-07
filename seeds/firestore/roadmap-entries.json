@@ -1,0 +1,74 @@
+[
+    {
+        "id": "firebase-crm-pr-66",
+        "status": "shipping",
+        "priority": "high",
+        "href": "https://github.com/mikezamayias/personal-website-v1/pull/66",
+        "hidden": false,
+        "order": 0,
+        "locale": {
+            "en": {
+                "title": "Firebase CRM for dynamic content",
+                "note": "Public read + admin write API across 8 content collections. PR #66 open."
+            },
+            "el": {
+                "title": "Firebase CRM για δυναμικό περιεχόμενο",
+                "note": "Public read + admin write API σε 8 collections. PR #66 ανοιχτό."
+            }
+        }
+    },
+    {
+        "id": "consulting-page",
+        "status": "todo",
+        "priority": "high",
+        "href": "https://github.com/mikezamayias/personal-website-v1/issues/65",
+        "hidden": false,
+        "order": 1,
+        "locale": {
+            "en": {
+                "title": "/consulting page + Calendly embed",
+                "note": "Fixed-scope Flutter and Nuxt audits, bookable in two clicks."
+            },
+            "el": {
+                "title": "σελίδα /consulting + Calendly embed",
+                "note": "Fixed-scope Flutter και Nuxt audits — κλείνεις σε δύο κλικ."
+            }
+        }
+    },
+    {
+        "id": "og-image-route",
+        "status": "todo",
+        "priority": "low",
+        "href": "https://github.com/mikezamayias/personal-website-v1",
+        "hidden": false,
+        "order": 2,
+        "locale": {
+            "en": {
+                "title": "OG image route",
+                "note": "server/api/og · per-post share images so links read like work, not URLs."
+            },
+            "el": {
+                "title": "OG image route",
+                "note": "server/api/og · εικόνα ανά post — links σαν έργο, όχι σκέτα URLs."
+            }
+        }
+    },
+    {
+        "id": "lighthouse-pr-comments",
+        "status": "done",
+        "priority": "low",
+        "href": "https://github.com/mikezamayias/personal-website-v1",
+        "hidden": false,
+        "order": 3,
+        "locale": {
+            "en": {
+                "title": "Lighthouse CI scores as PR comments",
+                "note": "Performance budget visible on every PR — a forcing function."
+            },
+            "el": {
+                "title": "Lighthouse CI scores ως PR comments",
+                "note": "Performance budget ορατό σε κάθε PR — μηχανισμός πειθαρχίας."
+            }
+        }
+    }
+]
