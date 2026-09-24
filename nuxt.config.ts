@@ -67,19 +67,13 @@ export default defineNuxtConfig({
                 { charset: "utf-8" },
                 { name: "viewport", content: "width=device-width, initial-scale=1" },
                 { name: "format-detection", content: "telephone=no" },
-                // Single theme-color tag managed at runtime by
-                // `public/theme-init.js` (pre-paint) and `useTheme.ts`
-                // (on toggle). Used to be two media-query-keyed tags
-                // here, but the site's theme toggle writes
-                // `data-theme` to <html> — INDEPENDENT of OS prefs —
-                // and iOS Safari additionally caches the initial
-                // theme-color even when the OS preference flips
-                // mid-session. Imperative `setAttribute` keeps the
-                // status-bar tint locked to the actual page bg
-                // regardless of which mechanism flipped the theme.
-                // Color value `#ffffff` matches --bg = --argent in
-                // the light theme; the dark counterpart `#1a1a1a`
-                // (matches --ink) is swapped in at runtime.
+                // Single theme-color tag, set at runtime by
+                // `public/theme-init.js` (pre-paint and on OS theme
+                // changes) and `useTheme.ts`. A pair of media-query-keyed
+                // tags would be simpler, but iOS Safari caches the initial
+                // theme-color when the OS setting flips mid-session.
+                // `#ffffff` matches the light --bg; the dark value is
+                // swapped in at runtime.
                 { name: "theme-color", content: "#ffffff" },
                 // `apple-mobile-web-app-capable` is the original iOS PWA
                 // declaration; the W3C-standard equivalent is `mobile-web-
@@ -106,7 +100,7 @@ export default defineNuxtConfig({
                 { property: "og:url", content: "https://mikezamayias.com" },
                 {
                     property: "og:image",
-                    content: "https://mikezamayias.com/brand/og-default.png",
+                    content: "https://mikezamayias.com/brand/og-default.png?v=20260924",
                 },
                 { property: "og:image:width", content: "1200" },
                 { property: "og:image:height", content: "630" },
@@ -123,43 +117,35 @@ export default defineNuxtConfig({
                 },
                 {
                     name: "twitter:image",
-                    content: "https://mikezamayias.com/brand/og-default.png",
+                    content: "https://mikezamayias.com/brand/og-default.png?v=20260924",
                 },
             ],
             htmlAttrs: {
                 lang: "en",
             },
             link: [
-                // Theme-aware favicon links managed at runtime by
-                // `public/theme-init.js` + `useTheme.ts` — same
-                // reasoning as the `theme-color` meta above (in-app
-                // toggle vs OS pref, plus Safari caching). Default
-                // hrefs are the light variants; dark gets swapped in.
-                // The version query intentionally busts Safari's sticky
-                // tab-icon cache after brand refreshes.
+                // The SVG favicon is adaptive: it carries its own
+                // prefers-color-scheme styles, so no script has to swap it.
+                // PNG and ICO cover browsers without SVG favicons. The
+                // version query busts Safari's sticky tab-icon cache.
+                {
+                    rel: "icon",
+                    type: "image/svg+xml",
+                    href: "/brand/favicon.svg?v=20260924",
+                },
                 {
                     rel: "icon",
                     type: "image/png",
                     sizes: "32x32",
-                    href: "/brand/favicon-32.png?v=20260602",
-                    "data-theme-favicon": "32",
-                },
-                {
-                    rel: "icon",
-                    type: "image/png",
-                    sizes: "256x256",
-                    href: "/brand/favicon-256.png?v=20260602",
-                    "data-theme-favicon": "256",
+                    href: "/brand/favicon-32.png?v=20260924",
                 },
                 {
                     rel: "shortcut icon",
-                    href: "/favicon.ico?v=20260602",
+                    href: "/favicon.ico?v=20260924",
                 },
-                // apple-touch-icon lives on the iOS home screen, not
-                // in the page chrome — theme-agnostic by design.
                 {
                     rel: "apple-touch-icon",
-                    href: "/apple-touch-icon.png?v=20260602",
+                    href: "/apple-touch-icon.png?v=20260924",
                 },
                 {
                     rel: "alternate",

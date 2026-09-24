@@ -96,7 +96,7 @@ Defined in `assets/css/tailwind.css`:
 - `components/codex/*` - Codex-identity components (Wordmark, SkipLink, CodexNav, CodexHero)
 - `composables/useTheme.ts` - system theme sync
 - `i18n/locales/en.json` - i18n string table (English only)
-- `public/brand/` - Canonical brand assets (favicons, logo PNGs, OG default)
+- `public/brand/` - Canonical brand assets: the Signature logo ("Mike." in Literata Italic, outlined), the adaptive `favicon.svg` plus PNG fallbacks, and the OG default image
 - `public/.well-known/` - Apple app-site-association file
 - `public/{theme-init.js,consent-init.js}` - Pre-paint FOUC (Flash Of Unstyled Content) / CLS (Cumulative Layout Shift) guards loaded from `'self'` (CSP-safe, no inline script hashes). Run before hydration so the theme attribute and consent state are applied to `<html>` before first paint on both prerendered and SSR routes.
 - `server/utils/{firebase,errors,render-cache,sanitize,magic-bytes,mock-content,preview-mock}.ts` - Server-side primitives: lazy admin SDK init, `isH3Error` typeguard, render-cache wrapper, HTML sanitize, upload magic-byte sniff, mock content fixtures, and the preview-mock allowlist gate (see Server route + preview / observability patterns).

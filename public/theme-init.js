@@ -1,9 +1,9 @@
 /* FOUC guard. The theme follows the operating system, with no toggle and no
- * stored preference. This applies it to <html data-theme=...> and to the
- * theme-aware chrome (<meta name="theme-color">, <link rel="icon">) before
- * paint, and keeps it in sync if the OS setting changes mid-session. It
- * lives in public/ so it loads from 'self' and needs no CSP hash, and it
- * works on prerendered and SSR routes alike (admin, error pages).
+ * stored preference. This applies it to <html data-theme=...> and to
+ * <meta name="theme-color"> before paint, and keeps both in sync if the OS
+ * setting changes mid-session. It lives in public/ so it loads from 'self'
+ * and needs no CSP hash, and it works on prerendered and SSR routes alike
+ * (admin, error pages).
  *
  * Why set the chrome imperatively instead of `media="(prefers-color-
  * scheme: ...)"` on the tags? iOS Safari caches the initial theme-color
@@ -14,22 +14,6 @@
 (function () {
     var THEME_COLOR_LIGHT = "#ffffff"; // matches --bg = --argent
     var THEME_COLOR_DARK = "#1a1a1a"; // matches --bg = --ink
-    var FAVICON_VERSION = "?v=20260602";
-    var FAVICONS = {
-        light: {
-            32: "/brand/favicon-32.png" + FAVICON_VERSION,
-            256: "/brand/favicon-256.png" + FAVICON_VERSION,
-        },
-        dark: {
-            32: "/brand/favicon-32-dark.png" + FAVICON_VERSION,
-            256: "/brand/favicon-256-dark.png" + FAVICON_VERSION,
-        },
-    };
-
-    function faviconHref(theme, size) {
-        var key = size === "32" ? "32" : "256";
-        return FAVICONS[theme === "dark" ? "dark" : "light"][key];
-    }
 
     function apply(theme) {
         var root = document.documentElement;
@@ -39,10 +23,6 @@
         if (meta) {
             meta.setAttribute("content", theme === "dark" ? THEME_COLOR_DARK : THEME_COLOR_LIGHT);
         }
-        var icons = document.querySelectorAll("link[data-theme-favicon]");
-        icons.forEach(function (icon) {
-            icon.setAttribute("href", faviconHref(theme, icon.getAttribute("data-theme-favicon")));
-        });
     }
 
     try {
