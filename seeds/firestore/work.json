@@ -21,11 +21,6 @@
                 "kind": "appstore",
                 "url": "https://testflight.apple.com/join/qBYPPDhN",
                 "label": "Join the TestFlight beta"
-            },
-            {
-                "kind": "live",
-                "url": "https://healpen.app",
-                "label": "healpen.app"
             }
         ]
     },
