@@ -145,5 +145,12 @@
             "nav": "Site",
             "setIn": "Set in Literata and JetBrains Mono"
         }
+    },
+    "work": {
+        "status": {
+            "building": "under construction",
+            "testing": "open for testing",
+            "live": "live"
+        }
     }
 }
