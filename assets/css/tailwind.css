@@ -63,20 +63,20 @@
      * that width.
      */
     html.has-consent-banner body {
-        padding-bottom: 8rem;
+        padding-bottom: 12rem;
     }
 
     html.has-consent-banner {
-        scroll-padding-bottom: 8rem;
+        scroll-padding-bottom: 12rem;
     }
 
     @media (width <= 640px) {
         html.has-consent-banner body {
-            padding-bottom: 12rem;
+            padding-bottom: 14rem;
         }
 
         html.has-consent-banner {
-            scroll-padding-bottom: 12rem;
+            scroll-padding-bottom: 14rem;
         }
 
         /* Mobile rhythm: the per-page `font-size: clamp(2rem, 6vw, 3.5rem)`

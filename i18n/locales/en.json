@@ -38,10 +38,10 @@
         }
     },
     "consent": {
-        "title": "Analytics",
-        "text": "This site uses Google Analytics to count visits. No ads, no other trackers.",
+        "title": "Can I count your visit?",
+        "text": "I use Google Analytics to see which pages get read. No ads, no other trackers.",
         "allow": "Allow",
-        "deny": "No"
+        "deny": "No thanks"
     },
     "page": {
         "work": {
