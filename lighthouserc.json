@@ -28,7 +28,7 @@
                     { "minScore": 0.85, "aggregationMethod": "median-run" }
                 ],
                 "cumulative-layout-shift": [
-                    "warn",
+                    "error",
                     { "maxNumericValue": 0.1, "aggregationMethod": "median-run" }
                 ],
                 "largest-contentful-paint": [
