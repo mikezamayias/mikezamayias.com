@@ -19,7 +19,7 @@
                 "long": "Μια μικρή πρακτική ψυχικής υγείας στο τηλέφωνο."
             }
         },
-        "links": [{ "kind": "live", "url": "https://healpen.app", "label": "TestFlight" }]
+        "links": [{ "kind": "live", "url": "https://healpen.app", "label": "healpen.app" }]
     },
     {
         "slug": "budget-coach",
@@ -114,6 +114,12 @@
                 "long": "Αυτό που διαβάζετε."
             }
         },
-        "links": [{ "kind": "repo", "url": "https://github.com/mikezamayias/mikezamayias.com" }]
+        "links": [
+            {
+                "kind": "repo",
+                "url": "https://github.com/mikezamayias/mikezamayias.com",
+                "label": "Source on GitHub"
+            }
+        ]
     }
 ]
