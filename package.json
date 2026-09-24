@@ -1,11 +1,13 @@
 {
     "private": true,
+    "license": "BSD-3-Clause",
     "type": "module",
     "scripts": {
         "build": "bun run snapshot && nuxt build",
         "dev": "nuxt dev",
         "generate": "bun run snapshot && NITRO_PRESET=static nuxt generate",
         "snapshot": "bun run scripts/snapshot-content.ts",
+        "snapshot:seeds": "bun run scripts/snapshot-from-seeds.ts",
         "preview": "nuxt preview",
         "preview:static": "serve .output/public",
         "postinstall": "nuxt prepare",

@@ -14,7 +14,6 @@ concurrency:
 
 permissions:
     contents: read
-    id-token: write
 
 # Runtime secrets from `.env.shared.sops.yaml` — SOPS-encrypted with
 # the age recipient in `.sops.yaml`. Build + Functions env steps
@@ -28,6 +27,8 @@ jobs:
     build-and-deploy:
         name: Build & Deploy to Production
         runs-on: ubuntu-latest
+        # workflow_dispatch can be run from any branch; only prod deploys.
+        if: github.ref == 'refs/heads/prod'
         timeout-minutes: 30
         environment:
             name: production
@@ -39,7 +40,7 @@ jobs:
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
               with:
-                  frozen-lockfile: "false"
+                  frozen-lockfile: "true"
 
             - name: Install SOPS
               run: |
@@ -211,6 +212,8 @@ jobs:
     deploy-rules:
         name: Deploy Firestore Rules
         runs-on: ubuntu-latest
+        # workflow_dispatch can be run from any branch; only prod deploys.
+        if: github.ref == 'refs/heads/prod'
         timeout-minutes: 20
         needs: rules
         steps:
@@ -271,6 +274,8 @@ jobs:
     deploy-worker:
         name: Deploy Cloudflare Worker
         runs-on: ubuntu-latest
+        # workflow_dispatch can be run from any branch; only prod deploys.
+        if: github.ref == 'refs/heads/prod'
         timeout-minutes: 20
         outputs:
             version_id: ${{ steps.worker_deploy.outputs.version_id }}

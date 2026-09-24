@@ -7,7 +7,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 A personal portfolio website built with Nuxt 4, Vue 3, and TailwindCSS.
 The home page (`pages/index.vue`) is the **Codex** landing: English-only, light and dark themed.
 The redesign shipped as plans A to F.
-The original specs and plans were removed from `docs/superpowers/` and remain in git history.
 
 ## Commands
 
@@ -20,8 +19,7 @@ bun run build        # Build for production
 bun run generate     # Generate static site (uses nitro static preset)
 bun run preview      # Preview production build
 
-# Deploy to Firebase Hosting
-firebase deploy      # Deploys .output/public directory
+# Deploy: push to `prod` (see .github/workflows/deploy.yml)
 ```
 
 ## Development Rules
@@ -102,7 +100,7 @@ Defined in `assets/css/tailwind.css`:
 - `public/.well-known/` - Apple app-site-association file
 - `public/{theme-init.js,consent-init.js}` - Pre-paint FOUC (Flash Of Unstyled Content) / CLS (Cumulative Layout Shift) guards loaded from `'self'` (CSP-safe, no inline script hashes). Run before hydration so the theme attribute and consent state are applied to `<html>` before first paint on both prerendered and SSR routes.
 - `server/utils/{firebase,errors,render-cache,sanitize,magic-bytes,mock-content,preview-mock}.ts` - Server-side primitives: lazy admin SDK init, `isH3Error` typeguard, render-cache wrapper, HTML sanitize, upload magic-byte sniff, mock content fixtures, and the preview-mock allowlist gate (see Server route + preview / observability patterns).
-- Build output goes to `.output/public` (configured in `firebase.json`)
+- Build output goes to `.output/public`, served by the Cloudflare Worker (`wrangler.jsonc`)
 
 ## Development Guidelines
 
@@ -121,7 +119,7 @@ Defined in `assets/css/tailwind.css`:
 
 ### Server route + preview / observability patterns
 
-Default conventions for public-facing server routes (PRs #77–#96). Admin routes are allowed to fail loud and skip most of this.
+Default conventions for public-facing server routes. Admin routes are allowed to fail loud and skip most of this.
 
 1. **Lift `use*` composables to handler top.** Call `useFirebaseAdmin()`, `useRuntimeConfig()`, `useHead()` before the first `try`. Satisfies the linter use-prefix rule. Also prevents the failure mode where init throws inside the try, gets caught, and ships a degraded card while the root cause stays hidden. Examples: `server/utils/firebase.ts`, `server/api/og/[type]/[slug].get.ts`, `server/api/render/post/[slug].get.ts`.
 
@@ -157,4 +155,4 @@ Use conventional commits: `type(scope): description`
 ### Deployment
 
 - Always test with `bun run generate && bun run preview` locally first
-- Firebase Hosting serves from `.output/public` directory
+- The Cloudflare Worker serves `.output/public` as static assets

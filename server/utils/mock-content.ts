@@ -250,7 +250,7 @@ export const MOCK_HOME_PAYLOAD = {
             id: "preview-mock-fixtures",
             status: "shipping",
             priority: "high",
-            href: "https://github.com/mikezamayias/personal-website-v1",
+            href: "https://github.com/mikezamayias/mikezamayias.com",
             hidden: false,
             order: 0,
             locale: {
@@ -268,7 +268,7 @@ export const MOCK_HOME_PAYLOAD = {
             id: "plan-e-app-check",
             status: "todo",
             priority: "high",
-            href: "https://github.com/mikezamayias/personal-website-v1",
+            href: "https://github.com/mikezamayias/mikezamayias.com",
             hidden: false,
             order: 1,
             locale: {
@@ -286,7 +286,7 @@ export const MOCK_HOME_PAYLOAD = {
             id: "plan-g-admin-mobile",
             status: "todo",
             priority: "medium",
-            href: "https://github.com/mikezamayias/personal-website-v1",
+            href: "https://github.com/mikezamayias/mikezamayias.com",
             hidden: false,
             order: 2,
             locale: {
