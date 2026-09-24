@@ -4,8 +4,15 @@
  * (the letter) and JetBrains Mono (the letter's notes, the Codex pages).
  * Fixed file names in public/fonts/ let nuxt.config.ts preload them, so they
  * are usually in hand before first paint and `swap` has nothing to shift.
- * Latin subset only; the site is English. Both are variable fonts under the
- * SIL Open Font License (public/fonts/OFL-*.txt).
+ * Latin subset only; the site is English. Both are under the SIL Open Font
+ * License (public/fonts/OFL-*.txt).
+ *
+ * Literata is cut down from the variable release with fontTools' instancer:
+ * weight pinned at 400 (the only weight the site sets in it) and optical
+ * size kept over 12–48, which covers every size it's used at (15–40 px).
+ * That takes each file from ~110 KB to ~33 KB. If a heavier weight is ever
+ * needed, re-cut from the full font rather than letting the browser fake
+ * bold. JetBrains Mono stays variable over 400–800.
  *
  * The secondary faces (GFS Didot, GFS Neohellenic, Cormorant Garamond) still
  * come from @nuxtjs/google-fonts with `font-display: optional`.
@@ -14,7 +21,7 @@
 @font-face {
     font-family: "Literata";
     font-style: normal;
-    font-weight: 200 900;
+    font-weight: 400;
     font-display: swap;
     src: url("/fonts/literata-latin.woff2") format("woff2");
     unicode-range:
@@ -25,7 +32,7 @@
 @font-face {
     font-family: "Literata";
     font-style: italic;
-    font-weight: 200 900;
+    font-weight: 400;
     font-display: swap;
     src: url("/fonts/literata-latin-italic.woff2") format("woff2");
     unicode-range:

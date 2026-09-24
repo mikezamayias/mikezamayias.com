@@ -147,20 +147,15 @@ export default defineNuxtConfig({
                     rel: "apple-touch-icon",
                     href: "/apple-touch-icon.png?v=20260924",
                 },
-                // The fonts the letter depends on (assets/css/fonts.css),
-                // preloaded so they are in hand before first paint.
+                // The fonts the letter's text depends on (assets/css/fonts.css),
+                // preloaded so they are in hand before first paint. The italic
+                // isn't: only "Hey there," and the sign-off use it, and its
+                // preload competed with the roman the paragraphs need.
                 {
                     rel: "preload",
                     as: "font",
                     type: "font/woff2",
                     href: "/fonts/literata-latin.woff2",
-                    crossorigin: "anonymous",
-                },
-                {
-                    rel: "preload",
-                    as: "font",
-                    type: "font/woff2",
-                    href: "/fonts/literata-latin-italic.woff2",
                     crossorigin: "anonymous",
                 },
                 {
