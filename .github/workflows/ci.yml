@@ -444,7 +444,9 @@ jobs:
             # The Firebase Hosting service-account key lives in the repo as a
             # SOPS+age file (secrets/firebase-service-account.sops.yaml). Decrypt
             # it here, mask every line, and hand it to the deploy action as a
-            # step output.
+            # step output. `project_id` stays unmasked: it's public (hardcoded
+            # as `projectId` below), and masking it makes GitHub drop the
+            # `preview_url` job output, which skips the Lighthouse audit.
             - name: Decrypt Firebase service account (SOPS + age)
               id: creds
               env:
@@ -453,7 +455,7 @@ jobs:
                   set -euo pipefail
                   SA_JSON=$(sops -d --extract '["service_account_json"]' secrets/firebase-service-account.sops.yaml)
                   echo "::add-mask::$SA_JSON"
-                  printf '%s' "$SA_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);for (const v of Object.values(j)) for (const l of String(v).split("\n")) if (l.trim()) console.log("::add-mask::"+l);});'
+                  printf '%s' "$SA_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);for (const [k,v] of Object.entries(j)) if (k!=="project_id") for (const l of String(v).split("\n")) if (l.trim()) console.log("::add-mask::"+l);});'
                   {
                     echo "json<<SA_EOF"
                     echo "$SA_JSON"
