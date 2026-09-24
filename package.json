@@ -19,6 +19,7 @@
         "test:rules": "RULES_SUITE=1 firebase emulators:exec --only firestore,storage --project demo-codex 'RULES_SUITE=1 vitest run --fileParallelism=false tests/firestore tests/storage'",
         "seed:firestore": "bun run scripts/seed-firestore.ts",
         "seed:firestore:reset": "bun run scripts/seed-firestore.ts --reset",
+        "seed:writing": "bun run scripts/seed-firestore.ts --only=writing",
         "migrate:collections": "bun run scripts/migrate-collections.ts",
         "migrate:collections:dry": "bun run scripts/migrate-collections.ts --dry-run",
         "drop:legacy:dry": "bun run scripts/drop-legacy-collections.ts --dry-run",

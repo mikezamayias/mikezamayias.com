@@ -3,10 +3,13 @@
 // One-shot seeder. Loads JSON from seeds/firestore/* and writes to Firestore
 // via firebase-admin (service account in scripts/service-account.json).
 //
-// Run: bun run seed:firestore [--reset] [--i-mean-it]
+// Run: bun run seed:firestore [--reset] [--i-mean-it] [--only=<name,...>]
 //   --reset      Delete all docs in seeded collections and overwrite seeded singleton docs
 //                instead of merging fields (DESTRUCTIVE)
 //   --i-mean-it  Required when --reset targets the production project ID.
+//   --only       Seed only these targets, e.g. `--only=writing`. Names are collection
+//                names, singleton paths (`singletons/hero`), or `settings`. Without it,
+//                everything is seeded, including /settings/main (allowedAdminIds).
 
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -28,6 +31,9 @@ const db = getFirestore();
 
 const reset = process.argv.includes("--reset");
 const iMeanIt = process.argv.includes("--i-mean-it");
+const onlyArg = process.argv.find((a) => a.startsWith("--only="));
+const only = onlyArg ? new Set(onlyArg.slice("--only=".length).split(",").filter(Boolean)) : null;
+const wanted = (target: string) => only === null || only.has(target);
 
 // Production guard. --reset on prod requires explicit --i-mean-it flag.
 if (reset && sa.project_id === PROD_PROJECT_ID && !iMeanIt) {
@@ -107,21 +113,33 @@ async function seedSettings() {
 }
 
 async function main() {
-    console.log(`seeding Firestore${reset ? " (RESET MODE)" : ""}…`);
-    await seedSettings();
-    await seedSingleton("singletons/hero", "hero.json");
-    await seedSingleton("singletons/about", "about.json");
-    await seedSingleton("singletons/roadmap", "roadmap.json");
-    await seedSingleton("profile/main", "profile.json");
-    await seedSingleton("contact/main", "contact.json");
-    await seedCollection("work", "slug", "work.json");
-    await seedCollection("writing", "slug", "writing.json");
-    await seedCollection("roadmap", "id", "roadmap-entries.json");
-    await seedCollection("social", "id", "social.json");
-    await seedCollection("experience", "id", "experience.json");
-    await seedCollection("skills", "id", "skills.json");
-    await seedCollection("education", "id", "education.json");
-    await seedCollection("certifications", "id", "certifications.json");
+    console.log(
+        `seeding Firestore${reset ? " (RESET MODE)" : ""}${only ? ` (only ${[...only].join(", ")})` : ""}…`
+    );
+    if (wanted("settings")) await seedSettings();
+    const singletons: [string, string][] = [
+        ["singletons/hero", "hero.json"],
+        ["singletons/about", "about.json"],
+        ["singletons/roadmap", "roadmap.json"],
+        ["profile/main", "profile.json"],
+        ["contact/main", "contact.json"],
+    ];
+    for (const [path, file] of singletons) {
+        if (wanted(path)) await seedSingleton(path, file);
+    }
+    const collections: [string, "slug" | "id", string][] = [
+        ["work", "slug", "work.json"],
+        ["writing", "slug", "writing.json"],
+        ["roadmap", "id", "roadmap-entries.json"],
+        ["social", "id", "social.json"],
+        ["experience", "id", "experience.json"],
+        ["skills", "id", "skills.json"],
+        ["education", "id", "education.json"],
+        ["certifications", "id", "certifications.json"],
+    ];
+    for (const [name, key, file] of collections) {
+        if (wanted(name)) await seedCollection(name, key, file);
+    }
     console.log("done.");
 }
 

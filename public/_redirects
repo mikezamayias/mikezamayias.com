@@ -1,0 +1,8 @@
+# Redirects applied by Cloudflare Workers Static Assets before any file is served.
+#
+# The blog lived at /blog until the Codex redesign moved it to /writing. Its RSS
+# feed was syndicated to LinkedIn, dev.to and Medium, so old post links are still
+# out there. The old pages/blog redirect pages could not run on the static build.
+/blog/rss.xml /rss.xml 301
+/blog /writing 301
+/blog/* /writing/:splat 301
