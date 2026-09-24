@@ -113,5 +113,37 @@
                 "email": "Email me"
             }
         }
+    },
+    "letter": {
+        "hello": "Hey there,",
+        "role": "Mobile engineer · Heraklion, Crete",
+        "intro": "I’m Mike, and I write mobile apps, mostly in Flutter and Kotlin. I spent a little over two years on Flutter at atFirstSite, then two years on native Android at Deloitte, working on three retail e-commerce apps in Kotlin and Jetpack Compose. These days I also run web accessibility assessments there.",
+        "apps": "In my own time I build small apps, slowly. {healpen} is a journal for expressive writing that encrypts your entries on the phone before they sync. {peakward} is a running app that builds training plans from HealthKit data. {budgetCoach} keeps a budget with a daily check-in and a weekly review, and {localmind} runs a language model on the phone, so nothing leaves it. They’re all in beta on TestFlight, so if you have an iPhone, join in.",
+        "tools": "{famon} is an open-source command-line tool that streams Firebase Analytics events from Android and iOS device logs while you debug. {efimeries} is a web app that builds fair on-call schedules for doctors in Greek public hospitals. And {site} is one of them too: I publish it from a small admin I built for it.",
+        "writing": "Now and then I {write} about what I’m building and what I learn along the way.",
+        "contact": "If you’re working on an app and want a hand, or just want to talk Flutter or Android, {contact}⁠. It’s {time} here in Heraklion, so allow for the time difference. I usually reply within a few days.",
+        "chip": {
+            "site": "this site",
+            "write": "write",
+            "contact": "write to me"
+        },
+        "note": {
+            "more": "More about {name}",
+            "writing": "Writing",
+            "recent": "Recent posts",
+            "allWriting": "All writing",
+            "feed": "RSS feed",
+            "contact": "Contact",
+            "email": "Email",
+            "copy": "Copy",
+            "copied": "Copied",
+            "copiedLive": "Email address copied",
+            "copyFailed": "Couldn’t copy. Select the address instead."
+        },
+        "signoff": "Talk soon,",
+        "footer": {
+            "nav": "Site",
+            "setIn": "Set in Literata and JetBrains Mono"
+        }
     }
 }
