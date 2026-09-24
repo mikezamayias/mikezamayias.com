@@ -356,19 +356,16 @@ export default defineNuxtConfig({
         preconnect: true,
         preload: true,
         useStylesheet: true,
-        // Explicit font-display:swap on the generated @font-face rules.
-        // The comment below claims the module defaults to swap, but
-        // Lighthouse's `font-display` audit was returning a 50% score
-        // (one or more woff2 sources still rendered with the
-        // browser-default `auto`, which means up to 3s of FOIT — text
-        // invisible while the font loads). Explicit swap removes that
-        // delay from the visual progress curve and was the last lever
-        // keeping the home page Speed Index above 2s. The legacy CLS
-        // concern that originally motivated leaving this implicit is
-        // moot — the home page already reserves 2.2em on `.codex-h1`
-        // (see CodexHero.vue), so the swap-time metric jump doesn't
-        // shift content below the hero.
-        display: "swap",
+        // font-display: optional. With `swap`, text painted in the
+        // fallback font re-flowed when the web font arrived: Lighthouse
+        // measured a 0.15 layout shift on the home hero as the GFS fonts
+        // loaded. `optional` gives the font a ~100 ms block period and then
+        // never swaps, so nothing moves after first paint. With `preload`
+        // above, the self-hosted files usually arrive in time; on a slow
+        // first visit the fallback stays for that page view, and the
+        // cached font is used from then on. It also satisfies Lighthouse's
+        // `font-display` audit, which only flags `auto`/`block`.
+        display: "optional",
         // `base64: true` previously inlined every woff2 as base64 inside
         // the generated `/css/nuxt-google-fonts.css` — that file ballooned
         // to 2.37 MB across 5 families × every weight × every unicode
@@ -376,8 +373,8 @@ export default defineNuxtConfig({
         // to false so fonts ship as external woff2 files (cacheable,
         // requestable in parallel, and not bytes Lighthouse counts
         // against FCP/LCP/Speed Index). The Cumulative-Layout-Shift cost
-        // is mitigated by `font-display: swap` (the module default) plus
-        // `preload: true` above issuing rel=preload for each subset.
+        // is handled by `font-display: optional` plus `preload: true`
+        // above issuing rel=preload for each subset.
         base64: false,
         inject: true,
         download: true,
@@ -388,6 +385,8 @@ export default defineNuxtConfig({
         // downloaded for nothing. Dropped here; if a future component
         // needs Inter, add it back with the minimum weight set.
         families: {
+            // Literata: the letter on the home page, and the logo's face.
+            Literata: { wght: [400, 500, 600], ital: [400, 500] },
             "JetBrains+Mono": { wght: [400, 500, 600, 700] },
             "GFS+Didot": { wght: [400] },
             "GFS+Neohellenic": { wght: [400, 700] },

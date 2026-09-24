@@ -51,6 +51,7 @@
     --font-serif: "Cormorant Garamond", "GFS Didot", georgia, serif;
     --font-sans: "GFS Neohellenic", system-ui, sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --font-letter: "Literata", "Iowan Old Style", "Palatino Linotype", georgia, serif;
 
     /* easings */
     --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -82,6 +83,24 @@
     --st-shipping: var(--olive-victor);
     --st-todo: var(--ink-soft);
     --st-done: var(--aegean-deep);
+
+    /* letter aliases — the home page is a letter on a sheet of paper.
+     * Chosen in the colour lab and fitted to WCAG AA in both themes:
+     * background paper, primary blue-modern, CTA aegean-deep, accent ochre.
+     * Mixes are in OKLab. */
+    --letter-bg: var(--paper);
+    --letter-sheet: var(--argent);
+    --letter-text: var(--ink);
+    --letter-soft: color-mix(in oklab, var(--ink-soft) 85%, var(--blue-modern));
+    --letter-primary: var(--blue-modern); /* salutation, links, focus */
+    --letter-cta: var(--aegean-deep); /* chips and pills, the logo's M */
+    --letter-on-cta: var(--argent);
+    --letter-container: color-mix(in oklab, var(--ochre) 16%, var(--argent)); /* notes, open chip */
+    --letter-on-container: color-mix(in oklab, var(--ochre) 66%, var(--ink));
+    --letter-outline: color-mix(in oklab, var(--blue-modern) 50%, var(--argent));
+    --letter-hairline: color-mix(in oklab, var(--blue-modern) 16%, var(--argent));
+    --letter-dot: var(--ochre); /* the logo's full stop */
+    --letter-shadow: 0 8px 20px color-mix(in oklch, var(--aegean-deep) 22%, transparent);
 }
 
 html[data-theme="dark"] {
@@ -108,4 +127,17 @@ html[data-theme="dark"] {
     --st-shipping: color-mix(in oklch, var(--olive-victor) 45%, var(--argent));
     --st-todo: var(--rule);
     --st-done: var(--blue-bavarian);
+
+    --letter-bg: color-mix(in oklab, var(--ink) 92%, var(--paper));
+    --letter-sheet: color-mix(in oklab, var(--ink) 84%, var(--paper));
+    --letter-text: var(--argent);
+    --letter-soft: var(--rule);
+    --letter-primary: color-mix(in oklab, var(--blue-modern) 48%, var(--argent));
+    --letter-cta: color-mix(in oklab, var(--aegean-deep) 55%, var(--argent));
+    --letter-on-cta: color-mix(in oklab, var(--aegean-deep) 22%, var(--ink));
+    --letter-container: color-mix(in oklab, var(--ochre) 34%, var(--letter-sheet));
+    --letter-on-container: color-mix(in oklab, var(--ochre) 20%, var(--argent));
+    --letter-outline: color-mix(in oklab, var(--letter-primary) 60%, var(--letter-sheet));
+    --letter-hairline: color-mix(in oklab, var(--letter-primary) 20%, var(--letter-sheet));
+    --letter-shadow: 0 8px 20px color-mix(in oklch, black 40%, transparent);
 }

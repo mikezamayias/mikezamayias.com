@@ -44,7 +44,7 @@ This project uses `bun.lock` as its lockfile. Using other package managers will 
 - **`@nuxtjs/i18n` v10** with `prefix_except_default` and a single English locale (`i18n/locales/en.json`). Browser-language detection and sitemap `autoI18n` are off. Add a locale entry in `nuxt.config.ts` to reintroduce Greek.
 - **Theme:** follows the operating system only; there is no toggle and no stored preference. `public/theme-init.js` sets `html[data-theme="light"|"dark"]` before paint and on OS changes, `useTheme` mirrors it for script. `tokens.css` swaps semantic aliases (`--bg`, `--fg`, `--accent`, etc.) via that attribute. `@nuxtjs/color-mode` is **not** in use.
 - **FontAwesome** icons via `<FaIcon>` component (registered globally)
-- **Google Fonts**: JetBrains Mono (Codex body + display), GFS Neohellenic, GFS Didot, Cormorant Garamond. Inter retained for legacy components only.
+- **Google Fonts** (self-hosted by `@nuxtjs/google-fonts`, `font-display: optional`): Literata (the home letter and the logo), JetBrains Mono (Codex body + display, letter notes), GFS Neohellenic, GFS Didot, Cormorant Garamond.
 - **Sentry** (`@sentry/nuxt`): gated by `enabled: appEnv === "production"` in both `sentry.client.config.ts` and `sentry.server.config.ts`. `import.meta.dev` / `NODE_ENV === "production"` cannot distinguish prod from staging/PR-preview builds, so the explicit `NUXT_PUBLIC_APP_ENV` runtime config decides. Staging + dev artifacts ship Sentry SDK code but do not initialize — zero ingest, zero quota burn.
 
 ### Color System
@@ -57,6 +57,8 @@ Tokens come from `assets/css/tokens.css`. Components reference semantic aliases 
     <a class="text-accent">accent link</a>
 </div>
 ```
+
+The home page letter uses its own `--letter-*` aliases (paper, sheet, text, soft, primary, cta, container, outline, hairline, dot), all mixed from the raw tokens below and swapped for dark in the same `data-theme` block.
 
 Available raw tokens (use only where a semantic alias doesn't fit): `paper`, `paper-deep`, `argent`, `ink`, `ink-soft`, `ink-faint`, `rule`, `rule-soft`, the seven `blue-*` variants, `vergina-gold`, `imperial-gold`, `olive-victor`, `olive-deep`, `phoenix-ember`, `phoenix-ash`, `tyrian-purple`, `athena-bronze`, `aegean-deep`, `santorini-cyan`, `terracotta`, `ochre`. Vergina-gold is reserved for micro accents (cursor, scanline) — don't use it for body text.
 
