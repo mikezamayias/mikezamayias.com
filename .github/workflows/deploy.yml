@@ -26,7 +26,7 @@ permissions:
 jobs:
     build-and-deploy:
         name: Build & Deploy to Production
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         # workflow_dispatch can be run from any branch; only prod deploys.
         if: github.ref == 'refs/heads/prod'
         timeout-minutes: 30
@@ -191,7 +191,7 @@ jobs:
 
     rules:
         name: Firestore Rules Tests
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         timeout-minutes: 10
         steps:
             - name: Checkout
@@ -211,7 +211,7 @@ jobs:
 
     deploy-rules:
         name: Deploy Firestore Rules
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         # workflow_dispatch can be run from any branch; only prod deploys.
         if: github.ref == 'refs/heads/prod'
         timeout-minutes: 20
@@ -273,7 +273,7 @@ jobs:
     # version ids from `bunx wrangler versions list --name personal-website-v1`.
     deploy-worker:
         name: Deploy Cloudflare Worker
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         # workflow_dispatch can be run from any branch; only prod deploys.
         if: github.ref == 'refs/heads/prod'
         timeout-minutes: 20
@@ -346,7 +346,8 @@ jobs:
                     worker_name="${pair%%:*}"
                     sops_key="${pair##*:}"
                     value=$(sops -d --extract "[\"$sops_key\"]" .env.shared.sops.yaml)
-                    echo "::add-mask::$value"
+                    # CONTACT_BCC_EMAIL is empty; masking an empty value only logs a warning.
+                    if [ -n "$value" ]; then echo "::add-mask::$value"; fi
                     printf '%s' "$value" | bunx wrangler secret put "$worker_name"
                   done
 
@@ -364,7 +365,7 @@ jobs:
 
     post-deploy:
         name: Post-Deploy Validation
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         timeout-minutes: 20
         # Verifies via the Cloudflare API that the version deployed by deploy-worker is the one currently serving.
         needs: [build-and-deploy, deploy-worker]
