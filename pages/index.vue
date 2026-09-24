@@ -2,16 +2,16 @@
     import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
     import {
         faArrowUpRightFromSquare,
+        faBrain,
         faCode,
+        faComputerMouse,
         faCopy,
         faEnvelope,
         faFeather,
         faPenNib,
         faPersonRunning,
-        faRobot,
         faTerminal,
         faUserDoctor,
-        faWallet,
     } from "@fortawesome/free-solid-svg-icons";
     import { faGithub, faLinkedin } from "@fortawesome/free-brands-svg-icons";
     import LetterChip from "~/components/letter/LetterChip.vue";
@@ -19,7 +19,8 @@
     import LetterMark from "~/components/letter/LetterMark.vue";
     import LetterNote from "~/components/letter/LetterNote.vue";
     import LetterSignature from "~/components/letter/LetterSignature.vue";
-    import { formatWorkStack } from "~/utils/workFormat";
+    import { formatPostDate } from "~/utils/dateFormat";
+    import { formatWorkFacts } from "~/utils/workFormat";
 
     // The home page is a signed letter. Its sentences live in
     // i18n/locales/en.json (`letter.*`); the chips inside them open notes
@@ -56,9 +57,9 @@
 
     const workChips: WorkChip[] = [
         { slot: "healpen", slug: "healpen", icon: faFeather, name: "Healpen" },
+        { slot: "mighty", slug: "mighty", icon: faComputerMouse, name: "Mighty" },
         { slot: "peakward", slug: "peakward", icon: faPersonRunning, name: "Peakward" },
-        { slot: "budgetCoach", slug: "budget-coach", icon: faWallet, name: "Budget Coach" },
-        { slot: "localmind", slug: "localmind", icon: faRobot, name: "LocalMind" },
+        { slot: "noima", slug: "noima", icon: faBrain, name: "Noima" },
         { slot: "famon", slug: "famon", icon: faTerminal, name: "famon" },
         { slot: "efimeries", slug: "efimeries", icon: faUserDoctor, name: "Efimeries" },
         {
@@ -70,7 +71,7 @@
         },
     ];
     const workParagraphs = [
-        { key: "letter.apps", slots: ["healpen", "peakward", "budgetCoach", "localmind"] },
+        { key: "letter.apps", slots: ["healpen", "mighty", "peakward", "noima"] },
         { key: "letter.tools", slots: ["famon", "efimeries", "site"] },
     ];
 
@@ -99,16 +100,6 @@
     }
 
     const posts = computed(() => writing.value ?? []);
-    const dateFormat = new Intl.DateTimeFormat("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        timeZone: "UTC",
-    });
-    function formatDate(date: string) {
-        const d = new Date(`${date}T00:00:00Z`);
-        return Number.isNaN(d.getTime()) ? date : dateFormat.format(d);
-    }
 
     const email = computed(() => contact.value?.email ?? "contact@mikezamayias.com");
     const timezone = computed(() => contact.value?.timezone ?? "Europe/Athens");
@@ -200,7 +191,7 @@
                                 <LetterIcon :icon="chipBySlot.get(slot)!.icon" />
                                 {{ nameFor(chipBySlot.get(slot)!) }}
                                 <span class="note-tag">{{
-                                    formatWorkStack(entryFor(chipBySlot.get(slot)!)!.stack)
+                                    formatWorkFacts(entryFor(chipBySlot.get(slot)!)!, t)
                                 }}</span>
                             </span>
                             <a
@@ -245,7 +236,7 @@
                         </span>
                         <ul v-if="posts.length">
                             <li v-for="post in posts" :key="post.slug">
-                                <time :datetime="post.date">{{ formatDate(post.date) }}</time>
+                                <time :datetime="post.date">{{ formatPostDate(post.date) }}</time>
                                 <NuxtLink :to="localePath(`/writing/${post.slug}`)">{{
                                     post.locale?.[locale]?.title ?? post.slug
                                 }}</NuxtLink>
