@@ -67,19 +67,13 @@ export default defineNuxtConfig({
                 { charset: "utf-8" },
                 { name: "viewport", content: "width=device-width, initial-scale=1" },
                 { name: "format-detection", content: "telephone=no" },
-                // Single theme-color tag managed at runtime by
-                // `public/theme-init.js` (pre-paint) and `useTheme.ts`
-                // (on toggle). Used to be two media-query-keyed tags
-                // here, but the site's theme toggle writes
-                // `data-theme` to <html> — INDEPENDENT of OS prefs —
-                // and iOS Safari additionally caches the initial
-                // theme-color even when the OS preference flips
-                // mid-session. Imperative `setAttribute` keeps the
-                // status-bar tint locked to the actual page bg
-                // regardless of which mechanism flipped the theme.
-                // Color value `#ffffff` matches --bg = --argent in
-                // the light theme; the dark counterpart `#1a1a1a`
-                // (matches --ink) is swapped in at runtime.
+                // Single theme-color tag, set at runtime by
+                // `public/theme-init.js` (pre-paint and on OS theme
+                // changes) and `useTheme.ts`. A pair of media-query-keyed
+                // tags would be simpler, but iOS Safari caches the initial
+                // theme-color when the OS setting flips mid-session.
+                // `#ffffff` matches the light --bg; the dark value is
+                // swapped in at runtime.
                 { name: "theme-color", content: "#ffffff" },
                 // `apple-mobile-web-app-capable` is the original iOS PWA
                 // declaration; the W3C-standard equivalent is `mobile-web-
@@ -106,7 +100,7 @@ export default defineNuxtConfig({
                 { property: "og:url", content: "https://mikezamayias.com" },
                 {
                     property: "og:image",
-                    content: "https://mikezamayias.com/brand/og-default.png",
+                    content: "https://mikezamayias.com/brand/og-default.png?v=20260924",
                 },
                 { property: "og:image:width", content: "1200" },
                 { property: "og:image:height", content: "630" },
@@ -123,43 +117,58 @@ export default defineNuxtConfig({
                 },
                 {
                     name: "twitter:image",
-                    content: "https://mikezamayias.com/brand/og-default.png",
+                    content: "https://mikezamayias.com/brand/og-default.png?v=20260924",
                 },
             ],
             htmlAttrs: {
                 lang: "en",
             },
             link: [
-                // Theme-aware favicon links managed at runtime by
-                // `public/theme-init.js` + `useTheme.ts` — same
-                // reasoning as the `theme-color` meta above (in-app
-                // toggle vs OS pref, plus Safari caching). Default
-                // hrefs are the light variants; dark gets swapped in.
-                // The version query intentionally busts Safari's sticky
-                // tab-icon cache after brand refreshes.
+                // The SVG favicon is adaptive: it carries its own
+                // prefers-color-scheme styles, so no script has to swap it.
+                // PNG and ICO cover browsers without SVG favicons. The
+                // version query busts Safari's sticky tab-icon cache.
+                {
+                    rel: "icon",
+                    type: "image/svg+xml",
+                    href: "/brand/favicon.svg?v=20260924",
+                },
                 {
                     rel: "icon",
                     type: "image/png",
                     sizes: "32x32",
-                    href: "/brand/favicon-32.png?v=20260602",
-                    "data-theme-favicon": "32",
-                },
-                {
-                    rel: "icon",
-                    type: "image/png",
-                    sizes: "256x256",
-                    href: "/brand/favicon-256.png?v=20260602",
-                    "data-theme-favicon": "256",
+                    href: "/brand/favicon-32.png?v=20260924",
                 },
                 {
                     rel: "shortcut icon",
-                    href: "/favicon.ico?v=20260602",
+                    href: "/favicon.ico?v=20260924",
                 },
-                // apple-touch-icon lives on the iOS home screen, not
-                // in the page chrome — theme-agnostic by design.
                 {
                     rel: "apple-touch-icon",
-                    href: "/apple-touch-icon.png?v=20260602",
+                    href: "/apple-touch-icon.png?v=20260924",
+                },
+                // The fonts the letter depends on (assets/css/fonts.css),
+                // preloaded so they are in hand before first paint.
+                {
+                    rel: "preload",
+                    as: "font",
+                    type: "font/woff2",
+                    href: "/fonts/literata-latin.woff2",
+                    crossorigin: "anonymous",
+                },
+                {
+                    rel: "preload",
+                    as: "font",
+                    type: "font/woff2",
+                    href: "/fonts/literata-latin-italic.woff2",
+                    crossorigin: "anonymous",
+                },
+                {
+                    rel: "preload",
+                    as: "font",
+                    type: "font/woff2",
+                    href: "/fonts/jetbrains-mono-latin.woff2",
+                    crossorigin: "anonymous",
                 },
                 {
                     rel: "alternate",
@@ -370,28 +379,21 @@ export default defineNuxtConfig({
         preconnect: true,
         preload: true,
         useStylesheet: true,
-        // Explicit font-display:swap on the generated @font-face rules.
-        // The comment below claims the module defaults to swap, but
-        // Lighthouse's `font-display` audit was returning a 50% score
-        // (one or more woff2 sources still rendered with the
-        // browser-default `auto`, which means up to 3s of FOIT — text
-        // invisible while the font loads). Explicit swap removes that
-        // delay from the visual progress curve and was the last lever
-        // keeping the home page Speed Index above 2s. The legacy CLS
-        // concern that originally motivated leaving this implicit is
-        // moot — the home page already reserves 2.2em on `.codex-h1`
-        // (see CodexHero.vue), so the swap-time metric jump doesn't
-        // shift content below the hero.
-        display: "swap",
+        // font-display: optional for these secondary faces. With `swap`,
+        // text painted in the fallback re-flowed when the web font arrived:
+        // Lighthouse measured a 0.15 layout shift on the old home hero as
+        // the GFS fonts loaded. `optional` never swaps after first paint;
+        // on a slow first visit the fallback stays for that page view. The
+        // fonts the letter relies on are preloaded separately with `swap`.
+        display: "optional",
         // `base64: true` previously inlined every woff2 as base64 inside
         // the generated `/css/nuxt-google-fonts.css` — that file ballooned
         // to 2.37 MB across 5 families × every weight × every unicode
         // subset, and it loaded synchronously in the critical path. Set
         // to false so fonts ship as external woff2 files (cacheable,
         // requestable in parallel, and not bytes Lighthouse counts
-        // against FCP/LCP/Speed Index). The Cumulative-Layout-Shift cost
-        // is mitigated by `font-display: swap` (the module default) plus
-        // `preload: true` above issuing rel=preload for each subset.
+        // against FCP/LCP/Speed Index). The layout-shift cost is handled by
+        // `font-display: optional` below.
         base64: false,
         inject: true,
         download: true,
@@ -402,7 +404,8 @@ export default defineNuxtConfig({
         // downloaded for nothing. Dropped here; if a future component
         // needs Inter, add it back with the minimum weight set.
         families: {
-            "JetBrains+Mono": { wght: [400, 500, 600, 700] },
+            // Literata and JetBrains Mono are self-hosted and preloaded
+            // instead (assets/css/fonts.css, public/fonts/).
             "GFS+Didot": { wght: [400] },
             "GFS+Neohellenic": { wght: [400, 700] },
             "Cormorant+Garamond": { wght: [400, 700] },

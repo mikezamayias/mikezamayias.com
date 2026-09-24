@@ -54,12 +54,21 @@ function getRule(pattern: string): HeaderRule {
 }
 
 describe("Cloudflare static asset headers (public/_headers)", () => {
-    it("exists, contains exactly two rules, and starts with /*", () => {
+    it("exists, contains exactly three rules, and starts with /*", () => {
         expect(existsSync(headersPath)).toBe(true);
 
         const rules = getRules();
-        expect(rules).toHaveLength(2);
-        expect(rules.map((rule) => rule.pattern)).toEqual(["/*", "/_nuxt/*"]);
+        expect(rules).toHaveLength(3);
+        expect(rules.map((rule) => rule.pattern)).toEqual(["/*", "/_nuxt/*", "/fonts/*"]);
+    });
+
+    it("caches the self-hosted fonts for a month, detached from /*", () => {
+        const rule = getRule("/fonts/*");
+        expect(rule.headers["Cache-Control"]).toBe("public, max-age=2592000, no-transform");
+        // Same regression guard as /_nuxt/*: without `! Cache-Control` the
+        // max-age=0 from /* is merged in and wins.
+        const content = readFileSync(headersPath, "utf8");
+        expect(content).toMatch(/\/fonts\/\*[\s\S]*?!\s+Cache-Control/);
     });
 
     it("sets Cache-Control: public, max-age=0, must-revalidate, no-transform on /*", () => {

@@ -54,74 +54,91 @@
 </template>
 
 <style scoped>
+    /* A small card in the letter's style, floating in the bottom corner.
+     * It sits above the page rather than across it; the global CSS in
+     * assets/css/tailwind.css reserves scroll space underneath while it's
+     * shown. Colours are the letter tokens, which swap with the theme. */
     .codex-consent {
         position: fixed;
-        inset: auto 0 0 0;
+        left: max(16px, env(safe-area-inset-left));
+        bottom: max(16px, env(safe-area-inset-bottom));
         z-index: 80;
+        width: min(25rem, calc(100vw - 32px));
         display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 1.5rem;
-        align-items: center;
-        padding: 1rem 1.5rem;
-        /* Use var(--bg) across both themes — the prior light-theme override to
-         * --paper-deep (#ece4d2) put --soft (#4a453d) text at 7.5:1. That
-         * passes WCAG 2 AA (>=4.5:1) by margin but axe-core's pixel sampler
-         * flagged it intermittently in CI on the fixed-positioned banner. With
-         * var(--bg) the consent text sits at a deterministic 9.5:1 in both
-         * themes; the border-top keeps the banner visually distinct. */
-        background: var(--bg);
-        border-top: 1px solid var(--line);
-        font-family: var(--font-mono);
-        font-size: 0.875rem;
+        gap: 14px;
+        padding: 18px 20px 20px;
+        background: var(--letter-sheet);
+        color: var(--letter-text);
+        border: 1px solid var(--letter-hairline);
+        border-radius: 20px;
+        box-shadow: var(--letter-shadow);
     }
     .codex-consent-title {
-        font-size: 0.875rem;
-        color: var(--fg);
-        margin: 0 0 0.25rem;
+        margin: 0 0 4px;
+        font: italic 400 1.125rem/1.3 var(--font-letter);
+        color: var(--letter-primary);
     }
     .codex-consent-text {
-        color: var(--soft);
         margin: 0;
-        max-width: 48ch;
+        font: 400 0.9375rem/1.55 var(--font-letter);
+        color: var(--letter-soft);
     }
     .codex-consent-actions {
         display: flex;
-        gap: 0.5rem;
+        flex-wrap: wrap;
+        gap: 10px;
     }
     .codex-consent-deny,
     .codex-consent-allow {
         appearance: none;
-        border: 1px solid var(--rule);
-        background: transparent;
-        color: var(--fg);
-        padding: 0.5rem 0.875rem;
-        font-family: inherit;
-        font-size: 0.8125rem;
+        min-height: 40px;
+        padding: 8px 16px;
+        border-radius: 14px;
+        font: 500 0.875rem var(--font-mono);
         cursor: pointer;
-        transition: border-color 150ms ease-in-out;
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease,
+            box-shadow 0.2s ease;
     }
     .codex-consent-allow {
-        background: var(--accent);
-        color: var(--bg);
-        border-color: var(--accent);
+        border: 0;
+        background: var(--letter-cta);
+        color: var(--letter-on-cta);
     }
-    .codex-consent-deny:hover,
+    .codex-consent-deny {
+        border: 1.5px solid var(--letter-outline);
+        background: transparent;
+        color: var(--letter-text);
+    }
     .codex-consent-allow:hover {
-        filter: brightness(1.05);
+        background: var(--letter-container);
+        color: var(--letter-on-container);
+        box-shadow: var(--letter-shadow);
     }
-    @media (width <= 640px) {
-        /* matches Tailwind sm: + the body padding-bottom flip in
-         * assets/css/tailwind.css */
-        .codex-consent {
-            grid-template-columns: 1fr;
-        }
+    .codex-consent-deny:hover {
+        border-color: var(--letter-cta);
+    }
+    .codex-consent-deny:focus-visible,
+    .codex-consent-allow:focus-visible {
+        outline: 3px solid var(--letter-primary);
+        outline-offset: 3px;
     }
     .codex-consent-enter-active,
     .codex-consent-leave-active {
-        transition: transform 250ms var(--ease-out-quart);
+        transition:
+            transform 250ms var(--ease-out-quart),
+            opacity 250ms ease;
     }
     .codex-consent-enter-from,
     .codex-consent-leave-to {
-        transform: translateY(100%);
+        transform: translateY(12px);
+        opacity: 0;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .codex-consent-enter-active,
+        .codex-consent-leave-active {
+            transition: none;
+        }
     }
 </style>

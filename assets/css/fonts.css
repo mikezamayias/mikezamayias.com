@@ -1,0 +1,107 @@
+/* assets/css/fonts.css
+ *
+ * Self-hosted, preloaded faces for the fonts the site depends on: Literata
+ * (the letter) and JetBrains Mono (the letter's notes, the Codex pages).
+ * Fixed file names in public/fonts/ let nuxt.config.ts preload them, so they
+ * are usually in hand before first paint and `swap` has nothing to shift.
+ * Latin subset only; the site is English. Both are variable fonts under the
+ * SIL Open Font License (public/fonts/OFL-*.txt).
+ *
+ * The secondary faces (GFS Didot, GFS Neohellenic, Cormorant Garamond) still
+ * come from @nuxtjs/google-fonts with `font-display: optional`.
+ */
+
+@font-face {
+    font-family: "Literata";
+    font-style: normal;
+    font-weight: 200 900;
+    font-display: swap;
+    src: url("/fonts/literata-latin.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+        U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Literata";
+    font-style: italic;
+    font-weight: 200 900;
+    font-display: swap;
+    src: url("/fonts/literata-latin-italic.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+        U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "JetBrains Mono";
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: swap;
+    src: url("/fonts/jetbrains-mono-latin.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+        U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Metric-matched fallbacks. On a slow first load the page paints in a
+ * system font before Literata arrives; these faces scale the common system
+ * serifs so the letter takes the same space in them, and the swap to
+ * Literata doesn't reflow the paragraphs (Lighthouse measured a 0.11 layout
+ * shift on the PR preview without them). size-adjust makes the fallback's
+ * text as wide as Literata's; the overrides carry Literata's ascent and
+ * descent. Widths were measured on the letter's own copy in Chromium where
+ * the font was available (Liberation, DejaVu), and taken from Capsize's
+ * metrics otherwise. A face whose local() font isn't installed is skipped.
+ * The monospace fallbacks are already within 0.3% of JetBrains Mono, except
+ * Consolas. */
+
+/* Capsize widths, corrected by the Times measurement below */
+@font-face {
+    font-family: "Literata Fallback Georgia";
+    src: local("Georgia");
+    size-adjust: 104%;
+    ascent-override: 113.2%;
+    descent-override: 29.6%;
+    line-gap-override: 0%;
+}
+
+/* measured: Liberation Serif, metric-compatible with Times New Roman */
+@font-face {
+    font-family: "Literata Fallback Times";
+    src: local("Times New Roman"), local("Liberation Serif");
+    size-adjust: 114.1%;
+    ascent-override: 103.2%;
+    descent-override: 27%;
+    line-gap-override: 0%;
+}
+
+/* measured */
+@font-face {
+    font-family: "Literata Fallback DejaVu";
+    src: local("DejaVu Serif");
+    size-adjust: 90%;
+    ascent-override: 130.9%;
+    descent-override: 34.2%;
+    line-gap-override: 0%;
+}
+
+/* Capsize widths */
+@font-face {
+    font-family: "Literata Fallback Noto";
+    src: local("Noto Serif");
+    size-adjust: 99.8%;
+    ascent-override: 117.9%;
+    descent-override: 30.9%;
+    line-gap-override: 0%;
+}
+
+/* glyph advance 1126/2048 vs 600/1000 */
+@font-face {
+    font-family: "JetBrains Mono Fallback Consolas";
+    src: local("Consolas");
+    size-adjust: 109.1%;
+    ascent-override: 93.5%;
+    descent-override: 27.5%;
+    line-gap-override: 0%;
+}
