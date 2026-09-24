@@ -29,11 +29,13 @@ const STACK_NAMES: Record<string, string> = {
     openai: "OpenAI",
     postgres: "PostgreSQL",
     postgresql: "PostgreSQL",
+    react: "React",
     supabase: "Supabase",
     swift: "Swift",
     swiftui: "SwiftUI",
     ts: "TypeScript",
     typescript: "TypeScript",
+    vite: "Vite",
     vue: "Vue",
 };
 

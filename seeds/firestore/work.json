@@ -8,7 +8,7 @@
         "glyph": "H",
         "order": 0,
         "published": true,
-        "locales_available": ["en"],
+        "locales_available": ["en", "el"],
         "locale": {
             "en": {
                 "name": "Healpen",
@@ -31,7 +31,7 @@
     },
     {
         "slug": "mighty",
-        "start": "2026",
+        "start": "2025-12",
         "stack": ["swiftui"],
         "platform": "macOS",
         "status": "testing",
@@ -75,8 +75,8 @@
     },
     {
         "slug": "noima",
-        "start": "2026",
-        "stack": ["flutter"],
+        "start": "2026-08",
+        "stack": ["react", "vite"],
         "status": "building",
         "glyph": "N",
         "order": 3,
@@ -160,7 +160,7 @@
         "glyph": "·Z",
         "order": 6,
         "published": true,
-        "locales_available": ["en"],
+        "locales_available": ["en", "el"],
         "locale": {
             "en": {
                 "name": "This site",
@@ -183,7 +183,7 @@
         "glyph": "B",
         "order": 7,
         "published": false,
-        "locales_available": ["en"],
+        "locales_available": ["en", "el"],
         "locale": {
             "en": {
                 "name": "Budget Coach",
