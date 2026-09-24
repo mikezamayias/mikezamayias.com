@@ -42,7 +42,7 @@ This project uses `bun.lock` as its lockfile. Using other package managers will 
 - **Nuxt 4** with hybrid SSR (`ssr: true`) + Firebase Cloud Function preset (`nitro.preset: 'firebase'`, gen2). Several public routes prerendered.
 - **TailwindCSS** with the canonical **hellas-design-system** token set (see `assets/css/tokens.css`)
 - **`@nuxtjs/i18n` v10** with `prefix_except_default` and a single English locale (`i18n/locales/en.json`). Browser-language detection and sitemap `autoI18n` are off. Add a locale entry in `nuxt.config.ts` to reintroduce Greek.
-- **Theme:** custom `useTheme` composable writes `html[data-theme="light"|"dark"]`; `tokens.css` swaps semantic aliases (`--bg`, `--fg`, `--accent`, etc.) via that attribute. `@nuxtjs/color-mode` is **not** in use.
+- **Theme:** follows the operating system only; there is no toggle and no stored preference. `public/theme-init.js` sets `html[data-theme="light"|"dark"]` before paint and on OS changes, `useTheme` mirrors it for script. `tokens.css` swaps semantic aliases (`--bg`, `--fg`, `--accent`, etc.) via that attribute. `@nuxtjs/color-mode` is **not** in use.
 - **FontAwesome** icons via `<FaIcon>` component (registered globally)
 - **Google Fonts**: JetBrains Mono (Codex body + display), GFS Neohellenic, GFS Didot, Cormorant Garamond. Inter retained for legacy components only.
 - **Sentry** (`@sentry/nuxt`): gated by `enabled: appEnv === "production"` in both `sentry.client.config.ts` and `sentry.server.config.ts`. `import.meta.dev` / `NODE_ENV === "production"` cannot distinguish prod from staging/PR-preview builds, so the explicit `NUXT_PUBLIC_APP_ENV` runtime config decides. Staging + dev artifacts ship Sentry SDK code but do not initialize — zero ingest, zero quota burn.
@@ -94,7 +94,7 @@ Defined in `assets/css/tailwind.css`:
 - `pages/index.vue` - Codex landing (CodexNav + CodexHero)
 - `pages/[...slug].vue` - 404 catch-all
 - `components/codex/*` - Codex-identity components (Wordmark, SkipLink, CodexNav, CodexHero)
-- `composables/use{Theme,ViewTransition}.ts` - Codex composables
+- `composables/useTheme.ts` - system theme sync
 - `i18n/locales/en.json` - i18n string table (English only)
 - `public/brand/` - Canonical brand assets (favicons, logo PNGs, OG default)
 - `public/.well-known/` - Apple app-site-association file

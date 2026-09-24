@@ -15,17 +15,7 @@
         "skip": "Skip to content",
         "lang": "Language",
         "primaryNav": "Primary navigation",
-        "theme": "Theme",
-        "themeLight": "Switch to light theme",
-        "themeDark": "Switch to dark theme",
-        "themeToggle": "Toggle theme",
-        "themeOptions": "Theme options",
         "menuToggle": "Open navigation menu"
-    },
-    "theme": {
-        "light": "Light",
-        "dark": "Dark",
-        "system": "System"
     },
     "footer": {
         "copy": "© 2026 Mike Zamayias",

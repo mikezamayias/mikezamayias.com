@@ -1,19 +1,14 @@
-/* FOUC guard. Reads persisted theme (or system pref) and applies it to
- * <html data-theme=...> AND to the theme-aware chrome elements
- * (<meta name="theme-color">, <link rel="icon">) before paint. Lives
- * in public/ so it loads from 'self' and doesn't need a CSP hash —
- * works on both prerendered and SSR-rendered routes (admin, dynamic
- * blog slugs, error pages).
+/* FOUC guard. The theme follows the operating system, with no toggle and no
+ * stored preference. This applies it to <html data-theme=...> and to the
+ * theme-aware chrome (<meta name="theme-color">, <link rel="icon">) before
+ * paint, and keeps it in sync if the OS setting changes mid-session. It
+ * lives in public/ so it loads from 'self' and needs no CSP hash, and it
+ * works on prerendered and SSR routes alike (admin, error pages).
  *
- * Why imperative chrome updates instead of `media="(prefers-color-
- * scheme: ...)"` on the tags?
- *   1. The site's theme toggle (`composables/useTheme.ts`) writes
- *      `localStorage["codex-theme"]` and flips `<html data-theme>`,
- *      which is INDEPENDENT of OS preference. Media-query-keyed tags
- *      don't see that toggle.
- *   2. iOS Safari caches the initial `theme-color` even when the OS
- *      preference flips mid-session and doesn't re-evaluate the
- *      media query reliably. `setAttribute` works around it.
+ * Why set the chrome imperatively instead of `media="(prefers-color-
+ * scheme: ...)"` on the tags? iOS Safari caches the initial theme-color
+ * and doesn't reliably re-evaluate the media query when the OS setting
+ * flips mid-session. `setAttribute` works around it.
  *
  * Keep the constants below in sync with `composables/useTheme.ts`. */
 (function () {
@@ -36,41 +31,35 @@
         return FAVICONS[theme === "dark" ? "dark" : "light"][key];
     }
 
-    function applyChrome(theme) {
-        document.documentElement.style.colorScheme = theme === "dark" ? "dark" : "light";
+    function apply(theme) {
+        var root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        root.style.colorScheme = theme;
         var meta = document.querySelector('meta[name="theme-color"]');
         if (meta) {
             meta.setAttribute("content", theme === "dark" ? THEME_COLOR_DARK : THEME_COLOR_LIGHT);
         }
         var icons = document.querySelectorAll("link[data-theme-favicon]");
-        if (icons.length) {
-            icons.forEach(function (icon) {
-                icon.setAttribute(
-                    "href",
-                    faviconHref(theme, icon.getAttribute("data-theme-favicon"))
-                );
-            });
-            return;
-        }
-        var icon = document.querySelector('link[rel="icon"]');
-        if (icon) {
-            icon.setAttribute("href", faviconHref(theme, "256"));
-        }
+        icons.forEach(function (icon) {
+            icon.setAttribute("href", faviconHref(theme, icon.getAttribute("data-theme-favicon")));
+        });
     }
 
     try {
-        var stored = localStorage.getItem("codex-theme");
-        var preference =
-            stored === "dark" || stored === "light" || stored === "system" ? stored : "system";
-        var systemTheme =
-            window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light";
-        var theme = preference === "system" ? systemTheme : preference;
-        document.documentElement.setAttribute("data-theme", theme);
-        document.documentElement.setAttribute("data-theme-preference", preference);
-        applyChrome(theme);
+        // The site used to offer a light/dark/system toggle that persisted
+        // here. Clear it so an old choice can't linger anywhere.
+        localStorage.removeItem("codex-theme");
     } catch (e) {
-        /* private mode + storage-quota throws — silent fallback to default */
+        /* storage blocked (private mode, cleared site data) */
+    }
+
+    var query = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+    apply(query && query.matches ? "dark" : "light");
+    if (query) {
+        var onChange = function (event) {
+            apply(event.matches ? "dark" : "light");
+        };
+        if (query.addEventListener) query.addEventListener("change", onChange);
+        else if (query.addListener) query.addListener(onChange);
     }
 })();
