@@ -50,8 +50,11 @@
     --font-display: "GFS Didot", "Cormorant Garamond", georgia, serif;
     --font-serif: "Cormorant Garamond", "GFS Didot", georgia, serif;
     --font-sans: "GFS Neohellenic", system-ui, sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, monospace;
-    --font-letter: "Literata", "Iowan Old Style", "Palatino Linotype", georgia, serif;
+    --font-mono:
+        "JetBrains Mono", "JetBrains Mono Fallback Consolas", ui-monospace, menlo, monospace;
+    --font-letter:
+        "Literata", "Literata Fallback Georgia", "Literata Fallback Times",
+        "Literata Fallback DejaVu", "Literata Fallback Noto", georgia, serif;
 
     /* easings */
     --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
