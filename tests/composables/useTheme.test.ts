@@ -1,5 +1,4 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import { useTheme } from "../../composables/useTheme";
 
 // Polyfill localStorage if happy-dom doesn't provide it in this vitest 4.x env
 if (typeof globalThis.localStorage === "undefined") {
@@ -78,156 +77,64 @@ function installMatchMediaMock(initialDark: boolean) {
 
 describe("useTheme", () => {
     beforeEach(() => {
+        vi.resetModules();
         document.documentElement.removeAttribute("data-theme");
-        document.documentElement.removeAttribute("data-theme-preference");
-        document.documentElement.removeAttribute("data-theme-dir");
         document.documentElement.style.colorScheme = "";
-        localStorage.clear();
+        let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+        if (!meta) {
+            meta = document.createElement("meta");
+            meta.name = "theme-color";
+            document.head.appendChild(meta);
+        }
+        meta.content = "";
     });
 
-    it("falls back to system preference when nothing stored", () => {
-        const { theme } = useTheme();
-        // jsdom defaults to light
-        expect(["light", "dark"]).toContain(theme.value);
+    async function freshTheme() {
+        const { useTheme } = await import("../../composables/useTheme");
+        return useTheme();
+    }
+
+    it("follows a light system setting", async () => {
+        installMatchMediaMock(false);
+        const { theme } = await freshTheme();
+        expect(theme.value).toBe("light");
+        expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+        expect(document.documentElement.style.colorScheme).toBe("light");
+        expect(document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content).toBe(
+            "#ffffff"
+        );
     });
 
-    it("applies the theme to the html element", async () => {
-        const { setTheme } = useTheme();
-        await setTheme("dark");
+    it("follows a dark system setting", async () => {
+        installMatchMediaMock(true);
+        const { theme } = await freshTheme();
+        expect(theme.value).toBe("dark");
         expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+        expect(document.documentElement.style.colorScheme).toBe("dark");
+        expect(document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content).toBe(
+            "#1a1a1a"
+        );
     });
 
-    it("persists preference and direction across calls", async () => {
-        const { setTheme, lastDirection } = useTheme();
-        // reset to a known starting state — the composable's themeRef is a
-        // module singleton that may carry "dark" over from a prior test
-        await setTheme("light");
-        localStorage.clear();
-        await setTheme("dark");
-        expect(localStorage.getItem("codex-theme")).toBe("dark");
-        expect(lastDirection.value).toBe("down");
-        await setTheme("light");
-        expect(lastDirection.value).toBe("up");
+    it("ignores a preference stored by the old theme toggle", async () => {
+        installMatchMediaMock(false);
+        localStorage.setItem("codex-theme", "dark");
+        const { theme } = await freshTheme();
+        expect(theme.value).toBe("light");
+        localStorage.removeItem("codex-theme");
     });
 
-    describe("applyChrome", () => {
-        beforeEach(() => {
-            // Ensure a <meta name="theme-color"> and theme-aware favicons exist in the test DOM
-            let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-            if (!meta) {
-                meta = document.createElement("meta");
-                meta.name = "theme-color";
-                meta.content = "#ffffff";
-                document.head.appendChild(meta);
-            } else {
-                meta.content = "#ffffff";
-            }
+    it("updates when the system setting changes mid-session", async () => {
+        const media = installMatchMediaMock(false);
+        const { theme } = await freshTheme();
+        expect(theme.value).toBe("light");
 
-            document
-                .querySelectorAll<HTMLLinkElement>("link[data-theme-favicon]")
-                .forEach((icon) => icon.remove());
+        media.darkQuery().setMatches(true);
+        expect(theme.value).toBe("dark");
+        expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
 
-            for (const size of ["32", "256"] as const) {
-                const icon = document.createElement("link");
-                icon.rel = "icon";
-                icon.dataset.themeFavicon = size;
-                icon.href = `/brand/favicon-${size}.png?v=20260602`;
-                document.head.appendChild(icon);
-            }
-        });
-
-        it("updates theme-color meta to dark value on setTheme('dark')", async () => {
-            const { setTheme } = useTheme();
-            await setTheme("dark");
-            const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-            expect(meta?.content).toBe("#1a1a1a");
-        });
-
-        it("updates the active document color-scheme on theme changes", async () => {
-            const { setTheme } = useTheme();
-            await setTheme("dark");
-            expect(document.documentElement.style.colorScheme).toBe("dark");
-
-            await setTheme("light");
-            expect(document.documentElement.style.colorScheme).toBe("light");
-        });
-
-        it("updates theme-color meta to light value on setTheme('light')", async () => {
-            const { setTheme } = useTheme();
-            await setTheme("dark");
-            await setTheme("light");
-            const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-            expect(meta?.content).toBe("#ffffff");
-        });
-
-        it("updates favicon href to dark variant on setTheme('dark')", async () => {
-            const { setTheme } = useTheme();
-            await setTheme("dark");
-            const icons = [
-                ...document.querySelectorAll<HTMLLinkElement>("link[data-theme-favicon]"),
-            ];
-            expect(icons.map((icon) => icon.href)).toEqual(
-                expect.arrayContaining([
-                    expect.stringContaining("favicon-32-dark.png?v=20260602"),
-                    expect.stringContaining("favicon-256-dark.png?v=20260602"),
-                ])
-            );
-        });
-
-        it("updates favicon href to light variant on setTheme('light')", async () => {
-            const { setTheme } = useTheme();
-            await setTheme("dark");
-            await setTheme("light");
-            const icons = [
-                ...document.querySelectorAll<HTMLLinkElement>("link[data-theme-favicon]"),
-            ];
-            expect(icons.map((icon) => icon.href)).toEqual(
-                expect.arrayContaining([
-                    expect.stringContaining("favicon-32.png?v=20260602"),
-                    expect.stringContaining("favicon-256.png?v=20260602"),
-                ])
-            );
-            expect(icons.some((icon) => icon.href.includes("dark"))).toBe(false);
-        });
-    });
-
-    describe("system preference", () => {
-        beforeEach(() => {
-            vi.resetModules();
-        });
-
-        it("reads and persists the system preference", async () => {
-            installMatchMediaMock(true);
-            localStorage.setItem("codex-theme", "system");
-            const { useTheme: useFreshTheme } = await import("../../composables/useTheme");
-
-            const { preference, theme, setTheme } = useFreshTheme();
-            expect(preference.value).toBe("system");
-            expect(theme.value).toBe("dark");
-            expect(document.documentElement.dataset.themePreference).toBe("system");
-
-            await setTheme("light");
-            expect(localStorage.getItem("codex-theme")).toBe("light");
-
-            await setTheme("system");
-            expect(localStorage.getItem("codex-theme")).toBe("system");
-            expect(document.documentElement.dataset.themePreference).toBe("system");
-            expect(theme.value).toBe("dark");
-        });
-
-        it("reacts to system color-scheme changes while preference is system", async () => {
-            const media = installMatchMediaMock(false);
-            localStorage.setItem("codex-theme", "system");
-            const { useTheme: useFreshTheme } = await import("../../composables/useTheme");
-
-            const { preference, theme } = useFreshTheme();
-            expect(preference.value).toBe("system");
-            expect(theme.value).toBe("light");
-
-            media.darkQuery().setMatches(true);
-            expect(theme.value).toBe("dark");
-            expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-            expect(document.documentElement.dataset.themePreference).toBe("system");
-        });
+        media.darkQuery().setMatches(false);
+        expect(theme.value).toBe("light");
+        expect(document.documentElement.getAttribute("data-theme")).toBe("light");
     });
 });

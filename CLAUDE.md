@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 A personal portfolio website built with Nuxt 4, Vue 3, and TailwindCSS.
-The home page (`pages/index.vue`) is the **Codex** landing: English-only, light and dark themed.
+The home page (`pages/index.vue`) is the **Annotated Letter**: a signed letter in Literata on a sheet of paper, English-only, following the system light or dark theme. The other public pages still use the Codex look.
 The redesign shipped as plans A to F.
 
 ## Commands
@@ -42,9 +42,9 @@ This project uses `bun.lock` as its lockfile. Using other package managers will 
 - **Nuxt 4** with hybrid SSR (`ssr: true`) + Firebase Cloud Function preset (`nitro.preset: 'firebase'`, gen2). Several public routes prerendered.
 - **TailwindCSS** with the canonical **hellas-design-system** token set (see `assets/css/tokens.css`)
 - **`@nuxtjs/i18n` v10** with `prefix_except_default` and a single English locale (`i18n/locales/en.json`). Browser-language detection and sitemap `autoI18n` are off. Add a locale entry in `nuxt.config.ts` to reintroduce Greek.
-- **Theme:** custom `useTheme` composable writes `html[data-theme="light"|"dark"]`; `tokens.css` swaps semantic aliases (`--bg`, `--fg`, `--accent`, etc.) via that attribute. `@nuxtjs/color-mode` is **not** in use.
+- **Theme:** follows the operating system only; there is no toggle and no stored preference. `public/theme-init.js` sets `html[data-theme="light"|"dark"]` before paint and on OS changes, `useTheme` mirrors it for script. `tokens.css` swaps semantic aliases (`--bg`, `--fg`, `--accent`, etc.) via that attribute. `@nuxtjs/color-mode` is **not** in use.
 - **FontAwesome** icons via `<FaIcon>` component (registered globally)
-- **Google Fonts**: JetBrains Mono (Codex body + display), GFS Neohellenic, GFS Didot, Cormorant Garamond. Inter retained for legacy components only.
+- **Fonts:** Literata (the home letter, and the logo's face) and JetBrains Mono (letter notes, Codex body + display) are self-hosted variable fonts in `public/fonts/`, declared in `assets/css/fonts.css` with `swap` and preloaded from `nuxt.config.ts`. GFS Neohellenic, GFS Didot and Cormorant Garamond come from `@nuxtjs/google-fonts` with `font-display: optional`.
 - **Sentry** (`@sentry/nuxt`): gated by `enabled: appEnv === "production"` in both `sentry.client.config.ts` and `sentry.server.config.ts`. `import.meta.dev` / `NODE_ENV === "production"` cannot distinguish prod from staging/PR-preview builds, so the explicit `NUXT_PUBLIC_APP_ENV` runtime config decides. Staging + dev artifacts ship Sentry SDK code but do not initialize — zero ingest, zero quota burn.
 
 ### Color System
@@ -58,13 +58,16 @@ Tokens come from `assets/css/tokens.css`. Components reference semantic aliases 
 </div>
 ```
 
+The home page letter uses its own `--letter-*` aliases (paper, sheet, text, soft, primary, cta, container, outline, hairline, dot), all mixed from the raw tokens below and swapped for dark in the same `data-theme` block.
+
 Available raw tokens (use only where a semantic alias doesn't fit): `paper`, `paper-deep`, `argent`, `ink`, `ink-soft`, `ink-faint`, `rule`, `rule-soft`, the seven `blue-*` variants, `vergina-gold`, `imperial-gold`, `olive-victor`, `olive-deep`, `phoenix-ember`, `phoenix-ash`, `tyrian-purple`, `athena-bronze`, `aegean-deep`, `santorini-cyan`, `terracotta`, `ochre`. Vergina-gold is reserved for micro accents (cursor, scanline) — don't use it for body text.
 
 ### Component Patterns
 
 Components live under four directories:
 
-- `components/codex/` — Codex-identity surfaces (CodexNav, CodexHero, SkipLink, Wordmark, home sections like SelectedWork / RecentWriting / ContactCta).
+- `components/letter/` — the home page letter: `LetterChip` (disclosure button inside a sentence), `LetterNote` (the card it opens), `LetterMark` / `LetterSignature` (the outlined logo), `LetterIcon`.
+- `components/codex/` — Codex-identity surfaces used by the other pages (CodexNav, CodexFooter, SkipLink, Wordmark, ConsentBanner).
 - `components/admin/` — admin shell + CRUD forms (AdminDocumentEditor, AdminFieldRenderer, layouts/admin.vue consumers).
 - `components/layout/` — shared layout primitives.
 - `components/ui/` — shadcn-vue primitives: Avatar, Badge, Button, Card, Dialog, DropdownMenu, Input, Label, ScrollArea, Select, Separator, Sheet, Skeleton, Sonner, Table, Textarea.
@@ -91,12 +94,12 @@ Defined in `assets/css/tailwind.css`:
 
 - `app.vue` - Mounts `<SkipLink />` globally + renders `<NuxtPage />`
 - `error.vue` - Root error boundary, brand-styled 404 + generic 5xx copy. Mounts `<SkipLink />` and `<ConsentBanner />` itself because `error.vue` fully replaces `app.vue` during error rendering — nothing from `app.vue` carries over.
-- `pages/index.vue` - Codex landing (CodexNav + CodexHero)
+- `pages/index.vue` - the letter. Its sentences live in `i18n/locales/en.json` under `letter.*`; the notes read work, writing, contact and social content from the snapshot. It opts out of the default layout.
 - `pages/[...slug].vue` - 404 catch-all
-- `components/codex/*` - Codex-identity components (Wordmark, SkipLink, CodexNav, CodexHero)
-- `composables/use{Theme,ViewTransition}.ts` - Codex composables
+- `components/codex/*` - Codex-identity components (Wordmark, SkipLink, CodexNav)
+- `composables/useTheme.ts` - system theme sync
 - `i18n/locales/en.json` - i18n string table (English only)
-- `public/brand/` - Canonical brand assets (favicons, logo PNGs, OG default)
+- `public/brand/` - Canonical brand assets: the Signature logo ("Mike." in Literata Italic, outlined), the adaptive `favicon.svg` plus PNG fallbacks, and the OG default image
 - `public/.well-known/` - Apple app-site-association file
 - `public/{theme-init.js,consent-init.js}` - Pre-paint FOUC (Flash Of Unstyled Content) / CLS (Cumulative Layout Shift) guards loaded from `'self'` (CSP-safe, no inline script hashes). Run before hydration so the theme attribute and consent state are applied to `<html>` before first paint on both prerendered and SSR routes.
 - `server/utils/{firebase,errors,render-cache,sanitize,magic-bytes,mock-content,preview-mock}.ts` - Server-side primitives: lazy admin SDK init, `isH3Error` typeguard, render-cache wrapper, HTML sanitize, upload magic-byte sniff, mock content fixtures, and the preview-mock allowlist gate (see Server route + preview / observability patterns).

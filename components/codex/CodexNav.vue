@@ -2,23 +2,11 @@
     import Wordmark from "./Wordmark.vue";
 
     const { t } = useI18n();
-    const { preference, setTheme } = useTheme();
 
     const localePath = useLocalePath();
     const route = useRoute();
     const navWrap = ref<HTMLElement | null>(null);
     const isMenuOpen = ref(false);
-    const isThemeMenuOpen = ref(false);
-    type ThemePreference = "light" | "dark" | "system";
-
-    const themeOptions = computed(
-        () =>
-            [
-                { value: "light", label: t("theme.light"), glyph: "☀" },
-                { value: "dark", label: t("theme.dark"), glyph: "☾" },
-                { value: "system", label: t("theme.system"), glyph: "◐" },
-            ] satisfies { value: ThemePreference; label: string; glyph: string }[]
-    );
 
     const navItems = computed(() => [
         { key: "home", to: localePath("/") },
@@ -28,36 +16,20 @@
         { key: "contact", to: localePath("/contact") },
     ]);
 
-    function toggleThemeMenu() {
-        isThemeMenuOpen.value = !isThemeMenuOpen.value;
-        if (isThemeMenuOpen.value) isMenuOpen.value = false;
-    }
-
-    async function chooseTheme(value: ThemePreference) {
-        await setTheme(value);
-        isThemeMenuOpen.value = false;
-    }
-
     function toggleMenu() {
         isMenuOpen.value = !isMenuOpen.value;
-        if (isMenuOpen.value) isThemeMenuOpen.value = false;
     }
 
     function closeMenu() {
         isMenuOpen.value = false;
     }
 
-    function closeThemeMenu() {
-        isThemeMenuOpen.value = false;
-    }
-
     function closePanels() {
         closeMenu();
-        closeThemeMenu();
     }
 
     function handleDocumentPointerDown(event: PointerEvent) {
-        if (!isMenuOpen.value && !isThemeMenuOpen.value) return;
+        if (!isMenuOpen.value) return;
         const target = event.target;
         if (!(target instanceof Node)) return;
         if (navWrap.value?.contains(target)) return;
@@ -97,44 +69,6 @@
             </div>
 
             <div class="codex-nav-tools">
-                <div class="codex-theme-control">
-                    <button
-                        type="button"
-                        class="codex-theme-toggle"
-                        :aria-label="t('a11y.themeOptions')"
-                        aria-haspopup="menu"
-                        aria-controls="codex-theme-menu"
-                        :aria-expanded="isThemeMenuOpen"
-                        @click="toggleThemeMenu"
-                    >
-                        <span aria-hidden="true">◐</span>
-                    </button>
-                    <Transition name="codex-theme-menu">
-                        <div
-                            v-if="isThemeMenuOpen"
-                            id="codex-theme-menu"
-                            class="codex-theme-menu"
-                            role="menu"
-                            :aria-label="t('a11y.theme')"
-                        >
-                            <button
-                                v-for="option in themeOptions"
-                                :key="option.value"
-                                type="button"
-                                class="codex-theme-option"
-                                role="menuitemradio"
-                                :aria-checked="preference === option.value"
-                                :data-active="preference === option.value ? 'true' : 'false'"
-                                @click="chooseTheme(option.value)"
-                            >
-                                <span class="codex-theme-option-glyph" aria-hidden="true">
-                                    {{ option.glyph }}
-                                </span>
-                                <span>{{ option.label }}</span>
-                            </button>
-                        </div>
-                    </Transition>
-                </div>
                 <button
                     type="button"
                     class="codex-menu-toggle"
@@ -224,12 +158,6 @@
         gap: 0.45rem;
         align-items: center;
     }
-    .codex-theme-control {
-        position: relative;
-        display: grid;
-        place-items: center;
-    }
-    .codex-theme-toggle,
     .codex-menu-toggle {
         display: grid;
         flex: 0 0 var(--codex-nav-action-size);
@@ -246,54 +174,9 @@
         font-size: 0.85rem;
         line-height: 1;
     }
-    .codex-theme-toggle:hover,
     .codex-menu-toggle:hover {
         color: var(--fg);
         border-color: var(--fg);
-    }
-    .codex-theme-menu {
-        position: absolute;
-        top: calc(100% + 0.55rem);
-        right: 0;
-        z-index: 90;
-        display: grid;
-        min-width: 10.5rem;
-        padding: 0.4rem;
-        gap: 0.12rem;
-        border: 1px solid color-mix(in oklch, var(--line) 65%, transparent);
-        border-radius: 8px;
-        background: color-mix(in oklch, var(--surface-card) 96%, var(--bg));
-        box-shadow: var(--shadow-float);
-    }
-    .codex-theme-option {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        min-height: 2.45rem;
-        border: 0;
-        border-radius: 7px;
-        padding: 0 0.75rem;
-        background: transparent;
-        color: var(--soft);
-        font: inherit;
-        font-weight: 750;
-        cursor: pointer;
-        text-align: left;
-    }
-    .codex-theme-option:hover,
-    .codex-theme-option[data-active="true"] {
-        color: var(--fg);
-        background: var(--surface-strong);
-    }
-    .codex-theme-option-glyph {
-        width: 1.35rem;
-        height: 1.35rem;
-        display: grid;
-        place-items: center;
-        border-radius: 999px;
-        background: color-mix(in oklch, var(--surface-cool) 55%, transparent);
-        font-size: 0.75rem;
-        line-height: 1;
     }
     .codex-menu-toggle {
         display: none;
@@ -388,16 +271,5 @@
     .codex-mobile-menu-leave-to {
         opacity: 0;
         transform: translateY(-0.35rem);
-    }
-    .codex-theme-menu-enter-active,
-    .codex-theme-menu-leave-active {
-        transition:
-            opacity 0.18s ease,
-            transform 0.22s var(--ease-out-quart);
-    }
-    .codex-theme-menu-enter-from,
-    .codex-theme-menu-leave-to {
-        opacity: 0;
-        transform: translateY(-0.25rem);
     }
 </style>
