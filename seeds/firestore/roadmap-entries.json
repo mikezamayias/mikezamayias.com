@@ -3,7 +3,7 @@
         "id": "firebase-crm-pr-66",
         "status": "shipping",
         "priority": "high",
-        "href": "https://github.com/mikezamayias/personal-website-v1/pull/66",
+        "href": "https://github.com/mikezamayias/mikezamayias.com",
         "hidden": false,
         "order": 0,
         "locale": {
@@ -21,7 +21,7 @@
         "id": "consulting-page",
         "status": "todo",
         "priority": "high",
-        "href": "https://github.com/mikezamayias/personal-website-v1/issues/65",
+        "href": "https://github.com/mikezamayias/mikezamayias.com",
         "hidden": false,
         "order": 1,
         "locale": {
@@ -39,7 +39,7 @@
         "id": "og-image-route",
         "status": "todo",
         "priority": "low",
-        "href": "https://github.com/mikezamayias/personal-website-v1",
+        "href": "https://github.com/mikezamayias/mikezamayias.com",
         "hidden": false,
         "order": 2,
         "locale": {
@@ -57,7 +57,7 @@
         "id": "lighthouse-pr-comments",
         "status": "done",
         "priority": "low",
-        "href": "https://github.com/mikezamayias/personal-website-v1",
+        "href": "https://github.com/mikezamayias/mikezamayias.com",
         "hidden": false,
         "order": 3,
         "locale": {

@@ -24,11 +24,6 @@
         return parts.join(" · ");
     });
 
-    const ogImageUrl = computed(
-        () =>
-            `https://mikezamayias.com/api/og/writing/${encodeURIComponent(slug.value)}?locale=${locale.value}`
-    );
-
     // rev 1.3 perf MEDIUM: server-rendered markdown means we fetch the
     // sanitized HTML, NOT the raw markdown body. The writing.locale[*].body
     // is still in the payload (admin shell needs it for editing). The
@@ -55,24 +50,6 @@
             writing.value?.locale?.[locale.value]?.sub ??
             "A blog post by Mike Zamayias on building and shipping mobile apps.",
     });
-
-    // Plan F Task 7: per-page og:image points at the server-rendered
-    // /api/og/writing/[slug] PNG (1200x630). Cached at the edge by the
-    // Cache-Control middleware so repeat shares hit CDN, not Firestore.
-    useHead(() => ({
-        meta: [
-            {
-                property: "og:image",
-                content: ogImageUrl.value,
-            },
-            {
-                name: "twitter:image",
-                content: ogImageUrl.value,
-            },
-            { property: "og:image:width", content: "1200" },
-            { property: "og:image:height", content: "630" },
-        ],
-    }));
 </script>
 
 <template>

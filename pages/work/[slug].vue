@@ -15,11 +15,6 @@
     const workStack = computed(() => (work.value ? formatWorkStack(work.value.stack) : ""));
     const hasMeta = computed(() => Boolean(workRange.value || workStack.value));
 
-    const ogImageUrl = computed(
-        () =>
-            `https://mikezamayias.com/api/og/work/${encodeURIComponent(slug.value)}?locale=${locale.value}`
-    );
-
     const head = useLocaleHead();
     useHead(head);
 
@@ -32,23 +27,6 @@
             work.value?.locale?.[locale.value]?.desc ??
             "A mobile project by Mike Zamayias, built with Flutter and native Android.",
     });
-    // Plan F Task 7: per-page og:image points at the server-rendered
-    // /api/og/work/[slug] PNG (1200x630). Cached at the edge by the
-    // Cache-Control middleware so repeat shares hit CDN, not Firestore.
-    useHead(() => ({
-        meta: [
-            {
-                property: "og:image",
-                content: ogImageUrl.value,
-            },
-            {
-                name: "twitter:image",
-                content: ogImageUrl.value,
-            },
-            { property: "og:image:width", content: "1200" },
-            { property: "og:image:height", content: "630" },
-        ],
-    }));
 </script>
 
 <template>

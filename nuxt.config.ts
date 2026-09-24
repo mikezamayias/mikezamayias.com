@@ -161,6 +161,12 @@ export default defineNuxtConfig({
                     rel: "apple-touch-icon",
                     href: "/apple-touch-icon.png?v=20260602",
                 },
+                {
+                    rel: "alternate",
+                    type: "application/rss+xml",
+                    title: "Writing · Mike Zamayias",
+                    href: "/rss.xml",
+                },
             ],
         },
         baseURL: "/",
@@ -218,7 +224,7 @@ export default defineNuxtConfig({
         // covers crawlers that find admin URLs through other channels;
         // the sitemap exclusion just stops us actively pointing crawlers
         // at them.
-        exclude: ["/admin/**"],
+        exclude: ["/admin/**", "/auth-redirect"],
     },
     security: {
         // Disable security headers in dev: nuxt-security's CSP blocks Vite's
@@ -456,19 +462,18 @@ export default defineNuxtConfig({
             },
         },
         prerender: {
-            // Plan I: extended prerender list to cover every static-shape
-            // public route. Snapshot listeners (`useHomeDataSnapshot` /
-            // `useWorkSnapshot` / `useWritingSnapshot` / etc.) open on
-            // client mount and patch the rendered HTML against live
-            // Firestore, so admin edits still appear after hydration.
-            // `crawlLinks` follows the public work/writing links from the
-            // seeded indexes so detail pages avoid production cold SSR.
+            // Every public route is prerendered from the build-time content
+            // snapshot (`scripts/snapshot-content.ts` → `content/*.json`).
+            // Nothing reads Firestore on the client, so admin edits go live
+            // with the next Deploy run. `crawlLinks` follows the work and
+            // writing links on the index pages to prerender each detail page.
             crawlLinks: true,
             ignore: [(route) => route.startsWith("/api") || route.startsWith("/auth-redirect")],
             routes: [
                 "/",
                 "/work",
                 "/writing",
+                "/rss.xml",
                 "/about",
                 "/contact",
                 "/privacy/peakward",

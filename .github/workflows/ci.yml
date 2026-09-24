@@ -13,7 +13,6 @@ concurrency:
 
 permissions:
     contents: read
-    pull-requests: write
 
 # Runtime secrets sourced from the SOPS-encrypted file at
 # `.env.shared.sops.yaml` (encrypted with the age recipient declared
@@ -42,6 +41,8 @@ jobs:
     typecheck:
         name: Type Check
         runs-on: ubuntu-latest
+        # Needs SOPS_AGE_KEY, which fork PRs don't get.
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         timeout-minutes: 10
         steps:
             - name: Checkout
@@ -119,6 +120,8 @@ jobs:
     build:
         name: Build
         runs-on: ubuntu-latest
+        # Needs SOPS_AGE_KEY, which fork PRs don't get.
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         timeout-minutes: 20
         steps:
             - name: Checkout
@@ -194,11 +197,9 @@ jobs:
         if: github.event_name == 'pull_request' && needs.preview.outputs.preview_url != ''
         # The `treosh/lighthouse-ci-action` posts a check + PR comment
         # via the supplied GITHUB_TOKEN; both require write scope on
-        # the corresponding resources. The repo-level `permissions:`
-        # block above (line 14) covers `pull-requests: write`, but
-        # GitHub-Actions best practice is to declare them per-job so
-        # downgrading the repo defaults doesn't silently break this
-        # one. `checks: write` is needed for the temporary-public-
+        # the corresponding resources. The workflow-level `permissions:`
+        # block is read-only, so the write scopes are granted here, to
+        # this job only. `checks: write` is needed for the temporary-public-
         # storage upload result check, `contents: read` for the
         # action's checkout-less log fetch.
         permissions:
@@ -304,7 +305,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 20
         needs: build
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         steps:
             - name: Checkout
               uses: actions/checkout@v5
@@ -393,7 +394,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 20
         needs: build
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         permissions:
             contents: read
             pull-requests: write
@@ -443,7 +444,9 @@ jobs:
             # The Firebase Hosting service-account key lives in the repo as a
             # SOPS+age file (secrets/firebase-service-account.sops.yaml). Decrypt
             # it here, mask every line, and hand it to the deploy action as a
-            # step output.
+            # step output. `project_id` stays unmasked: it's public (hardcoded
+            # as `projectId` below), and masking it makes GitHub drop the
+            # `preview_url` job output, which skips the Lighthouse audit.
             - name: Decrypt Firebase service account (SOPS + age)
               id: creds
               env:
@@ -452,7 +455,7 @@ jobs:
                   set -euo pipefail
                   SA_JSON=$(sops -d --extract '["service_account_json"]' secrets/firebase-service-account.sops.yaml)
                   echo "::add-mask::$SA_JSON"
-                  printf '%s' "$SA_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);for (const v of Object.values(j)) for (const l of String(v).split("\n")) if (l.trim()) console.log("::add-mask::"+l);});'
+                  printf '%s' "$SA_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);for (const [k,v] of Object.entries(j)) if (k!=="project_id") for (const l of String(v).split("\n")) if (l.trim()) console.log("::add-mask::"+l);});'
                   {
                     echo "json<<SA_EOF"
                     echo "$SA_JSON"
@@ -475,7 +478,7 @@ jobs:
                   # outputs. The `urls` output then arrives at the
                   # downstream Lighthouse job as `[]` and lhci fails with
                   # `No URLs provided to collect`. See PR #124 failed
-                  # run https://github.com/mikezamayias/personal-website-v1/actions/runs/26306468169.
+                  # run in the previous private repository.
                   projectId: personal-website-v1-f775a
                   channelId: pr-${{ github.event.pull_request.number }}
                   expires: 7d

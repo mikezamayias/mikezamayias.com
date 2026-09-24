@@ -314,7 +314,7 @@ export const adminCollections: Record<string, AdminCollectionDefinition> = {
             id: id === "new" ? "" : id,
             status: "todo",
             priority: "medium",
-            href: "https://github.com/mikezamayias/personal-website-v1",
+            href: "https://github.com/mikezamayias/mikezamayias.com",
             hidden: false,
             order: 0,
             locale: { en: { title: "", note: "" } },
