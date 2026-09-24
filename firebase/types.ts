@@ -4,6 +4,8 @@
 // these via the typed converters in firebase/db.ts; admin write code on the
 // server validates against the same types. Adding a field? Update here first.
 
+import type { WorkStatus } from "#shared/workStatus";
+
 // Plan I follow-up: Greek dropped from the public UI surface. The
 // type stays bi-lingual (`'en' | 'el'`) because the i18n module +
 // existing Firestore documents still carry both shapes; at runtime
@@ -36,6 +38,10 @@ export interface Work {
     glyph: string; // single-character marker
     order: number; // public-list ordering
     published: boolean;
+    /** Where it stands: under construction, open for testing, or live. */
+    status?: WorkStatus;
+    /** Where it runs, as shown to readers: "iOS", "macOS", "Web", "CLI". */
+    platform?: string;
     locales_available: Locale[]; // for composite-index query
     locale: {
         en?: { name: string; desc: string; long: string };

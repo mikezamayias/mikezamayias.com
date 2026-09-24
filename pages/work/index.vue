@@ -1,63 +1,74 @@
 <script setup lang="ts">
-    import SkeletonRow from "~/components/codex/SkeletonRow.vue";
     import CodexError from "~/components/codex/CodexError.vue";
-    import { formatWorkRange, formatWorkStack } from "~/utils/workFormat";
+    import { WORK_STATUSES, type WorkStatus } from "#shared/workStatus";
+    import { formatWorkFacts } from "~/utils/workFormat";
+    import type { Work } from "~/firebase/types";
 
-    // Plan B Task 17 (rev 1.6): /work index — list view of published work entries.
+    // /work: every published entry, grouped by where it stands (open for
+    // testing, under construction, out and in use), each with its facts
+    // line and one-line description. Entries without a status close the
+    // page under "Also".
     const { locale, t } = useI18n();
     const localePath = useLocalePath();
-    const { data: work, error, refresh } = useWork({ locale, limit: 50 });
+    const { data: work, error, refresh } = await useWork({ locale, limit: 50 });
 
     const head = useLocaleHead();
     useHead(head);
 
     useSeoMeta({
         title: "Work · Mike Zamayias",
-        description: "Apps by Mike Zamayias, built with Flutter and native Android.",
+        description: () => t("page.work.description"),
     });
+
+    // The letter's order: what you can try, what's coming, what's out.
+    const GROUP_ORDER: WorkStatus[] = ["testing", "building", "live"];
+    const groups = computed(() => {
+        const entries = work.value ?? [];
+        const byStatus = GROUP_ORDER.map((status) => ({
+            key: status as string,
+            heading: t(`page.work.group.${status}`),
+            entries: entries.filter((entry) => entry.status === status),
+        }));
+        const rest = entries.filter(
+            (entry) => !(WORK_STATUSES as readonly string[]).includes(entry.status ?? "")
+        );
+        return [
+            ...byStatus,
+            { key: "other", heading: t("page.work.group.other"), entries: rest },
+        ].filter((group) => group.entries.length > 0);
+    });
+
+    const nameOf = (entry: Work) => entry.locale?.[locale.value]?.name ?? entry.slug;
+    // The group heading already says the status, so the facts line leaves it out.
+    const factsOf = (entry: Work) => formatWorkFacts({ ...entry, status: undefined }, t);
 </script>
 
 <template>
-    <main id="main" role="main" class="codex-container">
-        <h1 class="codex-h1-page">{{ t("page.work.heading") }}</h1>
-        <Transition name="codex-fade" mode="out-in">
-            <!-- See pages/writing/index.vue for rationale on the explicit null check. -->
-            <SkeletonRow v-if="work == null && !error" key="skeleton" :rows="4" variant="work" />
-            <CodexError v-else-if="error" key="error" :error="error" :retry="refresh" />
-            <p v-else-if="!work || work.length === 0" key="empty" class="codex-empty">
-                Nothing published yet.
-            </p>
-            <ul v-else key="list" class="codex-list codex-content-list">
-                <li v-for="entry in work" :key="entry.slug">
-                    <NuxtLink
-                        :to="localePath(`/work/${entry.slug}`)"
-                        class="codex-list-row codex-list-link codex-content-link"
-                    >
-                        <span class="codex-content-date">{{ formatWorkRange(entry) }}</span>
-                        <span class="codex-content-title">
-                            {{ entry.locale?.[locale]?.name ?? entry.slug }}
-                        </span>
-                        <span class="codex-content-desc">
-                            {{ entry.locale?.[locale]?.desc }}
-                        </span>
-                        <span class="codex-content-meta">{{ formatWorkStack(entry.stack) }}</span>
-                    </NuxtLink>
+    <main id="main" class="page">
+        <h1 class="page-title">{{ t("page.work.heading") }}</h1>
+        <p class="page-lede">{{ t("page.work.lede") }}</p>
+
+        <CodexError v-if="error" :error="error" :retry="refresh" />
+        <p v-else-if="!groups.length" class="page-empty">{{ t("page.work.empty") }}</p>
+        <section
+            v-for="group in groups"
+            v-else
+            :key="group.key"
+            class="page-section"
+            :aria-labelledby="`work-${group.key}`"
+        >
+            <h2 :id="`work-${group.key}`">{{ group.heading }}</h2>
+            <ul class="page-entries">
+                <li v-for="entry in group.entries" :key="entry.slug" class="page-entry">
+                    <h3 class="page-entry-title">
+                        <NuxtLink :to="localePath(`/work/${entry.slug}`)">{{
+                            nameOf(entry)
+                        }}</NuxtLink>
+                    </h3>
+                    <p v-if="factsOf(entry)" class="page-facts">{{ factsOf(entry) }}</p>
+                    <p v-if="entry.locale?.[locale]?.desc">{{ entry.locale[locale]!.desc }}</p>
                 </li>
             </ul>
-        </Transition>
+        </section>
     </main>
 </template>
-
-<style scoped>
-    .codex-h1-page {
-        font-family: var(--font-display);
-        font-size: clamp(2rem, 6vw, 3.5rem);
-        margin: 4rem 0 2rem;
-        color: var(--fg);
-    }
-    .codex-empty {
-        color: var(--soft);
-        font-family: var(--font-mono);
-        padding: 1rem 0;
-    }
-</style>

@@ -3,6 +3,8 @@
         "slug": "healpen",
         "start": "2024-01",
         "stack": ["flutter", "openai"],
+        "platform": "iOS",
+        "status": "testing",
         "glyph": "H",
         "order": 0,
         "published": true,
@@ -10,108 +12,160 @@
         "locale": {
             "en": {
                 "name": "Healpen",
-                "desc": "Expressive-writing journal with on-device AI insights. Closed beta on TestFlight.",
-                "long": "A small mental-health practice in a phone."
-            },
-            "el": {
-                "name": "Healpen",
-                "desc": "Ημερολόγιο εκφραστικής γραφής με on-device AI insights. Closed beta στο TestFlight.",
-                "long": "Μια μικρή πρακτική ψυχικής υγείας στο τηλέφωνο."
-            }
-        },
-        "links": [{ "kind": "live", "url": "https://healpen.app", "label": "healpen.app" }]
-    },
-    {
-        "slug": "budget-coach",
-        "start": "2024-01",
-        "end": "2024-12",
-        "stack": ["flutter", "firebase"],
-        "glyph": "B",
-        "order": 1,
-        "published": true,
-        "locales_available": ["en", "el"],
-        "locale": {
-            "en": {
-                "name": "Budget Coach",
-                "desc": "A coach, not a spreadsheet. Daily check-in, weekly review.",
-                "long": "For people who hate spreadsheets but want a hold on their money."
-            },
-            "el": {
-                "name": "Budget Coach",
-                "desc": "Coach, όχι spreadsheet. Καθημερινό check-in, εβδομαδιαία ανασκόπηση.",
-                "long": "Για όσους μισούν τα λογιστικά φύλλα αλλά θέλουν έλεγχο στα οικονομικά τους."
-            }
-        }
-    },
-    {
-        "slug": "peakward",
-        "start": "2023-01",
-        "end": "2023-12",
-        "stack": ["flutter", "postgres"],
-        "glyph": "P",
-        "order": 2,
-        "published": true,
-        "locales_available": ["en", "el"],
-        "locale": {
-            "en": {
-                "name": "Peakward",
-                "desc": "Endurance training log built around volume and intent, not vanity metrics.",
-                "long": "Training, not leaderboards."
-            },
-            "el": {
-                "name": "Peakward",
-                "desc": "Ημερολόγιο προπόνησης αντοχής γύρω από όγκο και πρόθεση — όχι vanity metrics.",
-                "long": "Προπόνηση, όχι κατάταξη."
+                "desc": "A journaling app based on expressive writing. Entries are encrypted on the phone before they sync.",
+                "long": "- Works offline and syncs in the background\n- Entries are encrypted on the device with AES-GCM\n- Sentiment scoring on each entry\n- Onboarding animations in Rive\n- Releases through GitHub Actions"
             }
         },
         "links": [
             {
                 "kind": "appstore",
-                "url": "https://testflight.apple.com/join/vg7K8ZA5",
-                "label": "TestFlight beta"
+                "url": "https://testflight.apple.com/join/qBYPPDhN",
+                "label": "Join the TestFlight beta"
+            },
+            {
+                "kind": "live",
+                "url": "https://healpen.app",
+                "label": "healpen.app"
             }
         ]
     },
     {
-        "slug": "lsom",
-        "start": "2023-01",
-        "end": "2023-12",
-        "stack": ["nuxt", "supabase"],
-        "glyph": "L",
-        "order": 3,
+        "slug": "mighty",
+        "start": "2025-12",
+        "stack": ["swiftui"],
+        "platform": "macOS",
+        "status": "testing",
+        "glyph": "M",
+        "order": 1,
         "published": true,
-        "locales_available": ["en", "el"],
+        "locales_available": ["en"],
         "locale": {
             "en": {
-                "name": "LSOM",
-                "desc": "Lightweight social-media accountability tool. Open beta.",
-                "long": "Don't disappear, just discipline."
-            },
-            "el": {
-                "name": "LSOM",
-                "desc": "Ελαφρύ εργαλείο accountability για social media. Open beta.",
-                "long": "Όχι εξαφάνιση — απλώς πειθαρχία."
+                "name": "Mighty",
+                "desc": "Battery status and advanced controls for supported Logitech mice on the Mac.",
+                "long": "- Battery status for supported Logitech mice\n- Advanced controls over HID++, through supported Logitech receivers\n- Native SwiftUI\n- Install with Homebrew: brew install --cask mikezamayias/mighty/mighty"
             }
-        }
+        },
+        "links": [
+            {
+                "kind": "live",
+                "url": "https://mighty.mikezamayias.com",
+                "label": "mighty.mikezamayias.com"
+            }
+        ]
+    },
+    {
+        "slug": "peakward",
+        "start": "2023-01",
+        "stack": ["flutter", "postgres"],
+        "platform": "iOS",
+        "status": "building",
+        "glyph": "P",
+        "order": 2,
+        "published": true,
+        "locales_available": ["en"],
+        "locale": {
+            "en": {
+                "name": "Peakward",
+                "desc": "A running app that builds training plans from HealthKit data, with a small self-hosted backend.",
+                "long": "The plan adapts after every run."
+            }
+        },
+        "links": []
+    },
+    {
+        "slug": "noima",
+        "start": "2026-08",
+        "stack": ["react", "vite"],
+        "status": "building",
+        "glyph": "N",
+        "order": 3,
+        "published": true,
+        "locales_available": ["en"],
+        "locale": {
+            "en": {
+                "name": "Noima",
+                "desc": "A spaced-repetition app.",
+                "long": ""
+            }
+        },
+        "links": []
+    },
+    {
+        "slug": "famon",
+        "start": "2024-09",
+        "stack": ["dart", "firebase"],
+        "platform": "CLI",
+        "status": "live",
+        "glyph": "F",
+        "order": 4,
+        "published": true,
+        "locales_available": ["en"],
+        "locale": {
+            "en": {
+                "name": "famon",
+                "desc": "An open-source Dart CLI that streams Firebase Analytics events from Android and iOS device logs. On pub.dev.",
+                "long": "- Shows Firebase Analytics events as they happen\n- Android and iOS, simulators and real devices\n- Filters and session stats\n- Keeps events locally with Isar\n- Released through CI"
+            }
+        },
+        "links": [
+            {
+                "kind": "live",
+                "url": "https://pub.dev/packages/famon",
+                "label": "pub.dev/packages/famon"
+            },
+            {
+                "kind": "repo",
+                "url": "https://github.com/mikezamayias/famon",
+                "label": "Source on GitHub"
+            }
+        ]
+    },
+    {
+        "slug": "efimeries",
+        "start": "2024-01",
+        "stack": ["nuxt", "typescript"],
+        "platform": "Web",
+        "status": "live",
+        "glyph": "E",
+        "order": 5,
+        "published": true,
+        "locales_available": ["en"],
+        "locale": {
+            "en": {
+                "name": "Efimeries",
+                "desc": "A web app for doctors in Greek public hospitals. It builds fair on-call schedules with a constraint solver.",
+                "long": "- Custom constraint solver for the schedule\n- Balances weekends, holidays, and days off\n- Drag and drop with undo and redo\n- No server: PDF and Excel export and sharing by URL happen in the browser\n- Playwright, Vitest, and axe-core in CI"
+            }
+        },
+        "links": [
+            {
+                "kind": "live",
+                "url": "https://efimeries.pages.dev",
+                "label": "efimeries.pages.dev"
+            },
+            {
+                "kind": "repo",
+                "url": "https://github.com/mikezamayias/efimeries",
+                "label": "Source on GitHub"
+            }
+        ]
     },
     {
         "slug": "site-2026",
         "start": "2026-01",
-        "stack": ["nuxt 4", "ts"],
+        "stack": ["nuxt", "typescript", "firestore"],
+        "platform": "Web",
+        "status": "live",
         "glyph": "·Z",
-        "order": 4,
+        "order": 6,
         "published": true,
         "locales_available": ["en", "el"],
         "locale": {
             "en": {
-                "name": "This site, v.2026",
-                "desc": "The reference platform for everything else.",
-                "long": "You're reading it."
-            },
-            "el": {
-                "name": "Αυτό το site, v.2026",
-                "desc": "Η πλατφόρμα αναφοράς για όλα τα υπόλοιπα.",
-                "long": "Αυτό που διαβάζετε."
+                "name": "This site",
+                "desc": "Nuxt 4, prerendered and served from Cloudflare Workers.",
+                "long": "Nuxt 4 and TypeScript."
             }
         },
         "links": [
@@ -121,5 +175,37 @@
                 "label": "Source on GitHub"
             }
         ]
+    },
+    {
+        "slug": "budget-coach",
+        "start": "2024-01",
+        "stack": ["flutter", "firebase"],
+        "glyph": "B",
+        "order": 7,
+        "published": false,
+        "locales_available": ["en", "el"],
+        "locale": {
+            "en": {
+                "name": "Budget Coach",
+                "desc": "A budgeting app with a daily check-in and a weekly review. iOS, TestFlight beta.",
+                "long": "For people who want a grip on their money without a spreadsheet."
+            }
+        }
+    },
+    {
+        "slug": "localmind",
+        "start": "2024-06",
+        "stack": ["flutter"],
+        "glyph": "L",
+        "order": 8,
+        "published": false,
+        "locales_available": ["en"],
+        "locale": {
+            "en": {
+                "name": "LocalMind",
+                "desc": "An iOS app that runs a language model on the phone. Nothing leaves the device. TestFlight beta.",
+                "long": ""
+            }
+        }
     }
 ]

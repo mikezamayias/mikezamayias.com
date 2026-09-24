@@ -1,5 +1,6 @@
 // shared/schemas.ts
 import * as z from "zod";
+import { WORK_STATUSES } from "./workStatus";
 
 const SlugRegex = /^[a-z0-9-]+$/;
 const Url = z.string().url();
@@ -15,6 +16,8 @@ export const WorkSchema = z.object({
     glyph: z.string().max(4),
     order: z.number().int(),
     published: z.boolean(),
+    status: z.enum(WORK_STATUSES).optional(),
+    platform: z.string().max(32).optional(),
     locales_available: z.array(z.enum(["en", "el"])).min(1),
     locale: PerLocale(
         z.object({
