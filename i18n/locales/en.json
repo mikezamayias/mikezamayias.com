@@ -46,12 +46,29 @@
     "page": {
         "work": {
             "heading": "Work",
-            "notFound": "Work entry not found."
+            "notFound": "Work entry not found.",
+            "description": "Apps and tools by Mike Zamayias, mobile engineer in Heraklion, Crete, and where each one stands.",
+            "lede": "Apps and tools I build in my own time, and where each one stands.",
+            "empty": "Nothing published yet.",
+            "back": "All work",
+            "group": {
+                "testing": "Open for testing",
+                "building": "Under construction",
+                "live": "Out and in use",
+                "other": "Also"
+            }
         },
         "writing": {
             "heading": "Writing",
             "notFound": "Writing entry not found.",
-            "bodyUnavailable": "The post did not load. Refresh to try again."
+            "bodyUnavailable": "The post did not load. Refresh to try again.",
+            "description": "Writing by Mike Zamayias on building mobile apps, and what the work teaches along the way.",
+            "lede": "Notes on what I’m building and what I learn along the way.",
+            "empty": "Nothing published yet.",
+            "listLabel": "Posts",
+            "readTime": "{n} min read",
+            "feed": "Follow the RSS feed",
+            "back": "All writing"
         },
         "contact": {
             "kicker": "Contact",
@@ -65,7 +82,13 @@
             "message": "Message",
             "successTitle": "Sent",
             "successText": "I reply within a few days.",
-            "sendAnother": "Send another"
+            "sendAnother": "Send another",
+            "direct": "Prefer email?",
+            "description": "Write to Mike Zamayias, mobile engineer in Heraklion, Crete."
+        },
+        "about": {
+            "heading": "About",
+            "description": "Mike Zamayias, mobile engineer in Heraklion, Crete: experience, skills and education."
         }
     },
     "about": {
@@ -79,7 +102,14 @@
         "education": "Education",
         "certifications": "Certifications",
         "links": "Links",
-        "present": "present"
+        "present": "present",
+        "skillGroup": {
+            "language": "Languages",
+            "framework": "Frameworks",
+            "platform": "Platforms",
+            "tool": "Tools",
+            "other": "Other"
+        }
     },
     "section": {
         "work": {

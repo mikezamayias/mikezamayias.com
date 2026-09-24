@@ -7,13 +7,13 @@
     // `app.vue` during error rendering (not just `<NuxtPage />`), so any
     // global mounts from app.vue must be repeated here. We re-mount
     // SkipLink + the consent banner so the a11y + consent contract is
-    // preserved on error pages too.
+    // preserved on error pages too, and wrap the page in the default
+    // layout so it keeps the site's frame.
     //
     // Receives `error` from Nuxt's renderer (typed as `NuxtError`). The
     // `statusCode` is the only field we branch on; status text and
     // stack are exposed in dev via Nuxt's overlay, not duplicated here.
     import type { NuxtError } from "#app";
-    import CodexNav from "~/components/codex/CodexNav.vue";
     import SkipLink from "~/components/codex/SkipLink.vue";
     import ConsentBanner from "~/components/codex/ConsentBanner.vue";
 
@@ -67,84 +67,24 @@
 
 <template>
     <SkipLink />
-    <div class="codex-shell">
-        <CodexNav />
-        <main id="main" role="main" class="codex-container">
-            <section class="codex-error-page" data-section="error">
-                <p class="codex-error-kicker" data-codex-kicker>
-                    {{ t(kickerKey) }}
-                </p>
-                <h1 class="codex-error-heading">
-                    {{ t(headingKey) }}
-                </h1>
-                <p class="codex-error-lede">
-                    {{ t(ledeKey) }}
-                </p>
-                <!-- NuxtLink rather than a button because this is
-                     navigation, not an action. clearError() is called via
-                     @click so the error state is reset before the route
-                     resolves; the link's `to` still triggers the actual
-                     navigation. -->
-                <NuxtLink
-                    :to="localePath('/')"
-                    class="codex-error-home"
-                    @click.prevent="handleHome"
-                >
-                    {{ t("error.page.home") }}
-                </NuxtLink>
-            </section>
+    <NuxtLayout name="default">
+        <main id="main" class="page" data-section="error">
+            <p class="page-kicker">{{ t(kickerKey) }}</p>
+            <h1 class="page-title">{{ t(headingKey) }}</h1>
+            <p class="page-lede">{{ t(ledeKey) }}</p>
+            <!-- NuxtLink rather than a button because this is
+                 navigation, not an action. clearError() is called via
+                 @click so the error state is reset before the route
+                 resolves; the link's `to` still triggers the actual
+                 navigation. -->
+            <NuxtLink :to="localePath('/')" class="page-pill" @click.prevent="handleHome">
+                {{ t("error.page.home") }}
+            </NuxtLink>
         </main>
-    </div>
+    </NuxtLayout>
     <!-- Same `<ClientOnly>` reasoning as app.vue: useConsent reads
          localStorage which is server-blind. -->
     <ClientOnly>
         <ConsentBanner />
     </ClientOnly>
 </template>
-
-<style scoped>
-    .codex-error-page {
-        padding: 5.5rem 0 3rem;
-        max-width: 38rem;
-    }
-    .codex-error-kicker {
-        font-family: var(--font-mono);
-        font-size: 0.78rem;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--soft);
-        margin: 0 0 1rem;
-    }
-    .codex-error-heading {
-        font-family: var(--font-display);
-        font-size: clamp(2rem, 6vw, 3.25rem);
-        line-height: 1.1;
-        color: var(--fg);
-        margin: 0 0 1.25rem;
-    }
-    .codex-error-lede {
-        font-family: var(--font-mono);
-        font-size: 1rem;
-        line-height: 1.6;
-        color: var(--soft);
-        margin: 0 0 2.25rem;
-    }
-    .codex-error-home {
-        appearance: none;
-        font-family: var(--font-mono);
-        font-size: 0.875rem;
-        letter-spacing: 0.05em;
-        color: var(--bg);
-        background: var(--accent);
-        border: 1px solid var(--accent);
-        padding: 0.65rem 1.1rem;
-        cursor: pointer;
-        transition:
-            background-color 0.45s var(--ease-out-expo),
-            color 0.45s var(--ease-out-expo);
-    }
-    .codex-error-home:hover {
-        background: transparent;
-        color: var(--accent);
-    }
-</style>

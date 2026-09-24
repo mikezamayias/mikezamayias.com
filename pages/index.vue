@@ -333,17 +333,6 @@
     </div>
 </template>
 
-<style>
-    /* The page behind the sheet, including overscroll. */
-    body.letter-body {
-        background: var(--letter-bg);
-        /* The Codex body face (GFS Neohellenic) is otherwise inherited by
-         * the few elements outside the letter, which made the home page
-         * download it for nothing. */
-        font-family: var(--font-letter);
-    }
-</style>
-
 <style scoped>
     .letter-page {
         min-height: 100vh;

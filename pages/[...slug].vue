@@ -1,7 +1,7 @@
 <script setup lang="ts">
     // 404 catch-all. Throws a 404 NuxtError so the universal error
     // boundary at `~/error.vue` renders the brand-styled 404 page
-    // (with i18n + CodexNav). Plan B Task 18 simplified this from the
+    // (in the site frame). Plan B Task 18 simplified this from the
     // legacy Nuxt-Content dynamic-page lookup — only the throw remains.
     throw createError({
         statusCode: 404,
