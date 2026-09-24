@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatWorkRange, formatWorkStack } from "~/utils/workFormat";
+import { formatWorkFacts, formatWorkRange, formatWorkStack } from "~/utils/workFormat";
 
 describe("formatWorkRange", () => {
     it("formats completed month ranges", () => {
@@ -17,6 +17,27 @@ describe("formatWorkRange", () => {
 
 describe("formatWorkStack", () => {
     it("joins stack items without leading separators", () => {
-        expect(formatWorkStack([" flutter ", "", "postgres"])).toBe("flutter · postgres");
+        expect(formatWorkStack([" flutter ", "", "postgres"])).toBe("Flutter · PostgreSQL");
+    });
+
+    it("shows unknown tags as written", () => {
+        expect(formatWorkStack(["openai", "Rive"])).toBe("OpenAI · Rive");
+    });
+});
+
+describe("formatWorkFacts", () => {
+    const t = (key: string) => `[${key}]`;
+
+    it("lists stack, platform, then status", () => {
+        expect(
+            formatWorkFacts({ stack: ["flutter", "openai"], platform: "iOS", status: "testing" }, t)
+        ).toBe("Flutter · OpenAI · iOS · [work.status.testing]");
+    });
+
+    it("skips missing parts and unknown statuses", () => {
+        expect(formatWorkFacts({ stack: ["dart"], status: "shipping" }, t)).toBe("Dart");
+        expect(formatWorkFacts({ platform: " Web ", status: "live" }, t)).toBe(
+            "Web · [work.status.live]"
+        );
     });
 });

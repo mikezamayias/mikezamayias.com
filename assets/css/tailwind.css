@@ -6,6 +6,7 @@
 @import url("./tokens.css");
 @import url("./transitions.css");
 @import url("./codex-patterns.css");
+@import url("./letter-pages.css");
 
 @tailwind base;
 @tailwind components;

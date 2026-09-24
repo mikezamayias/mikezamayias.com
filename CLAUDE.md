@@ -58,7 +58,7 @@ Tokens come from `assets/css/tokens.css`. Components reference semantic aliases 
 </div>
 ```
 
-The home page letter uses its own `--letter-*` aliases (paper, sheet, text, soft, primary, cta, container, outline, hairline, dot), all mixed from the raw tokens below and swapped for dark in the same `data-theme` block.
+The public pages (the letter and the inner pages) use the `--letter-*` aliases (bg, sheet, text, soft, primary, cta, container, outline, hairline, dot, error), all mixed from the raw tokens below and swapped for dark in the same `data-theme` block.
 
 Available raw tokens (use only where a semantic alias doesn't fit): `paper`, `paper-deep`, `argent`, `ink`, `ink-soft`, `ink-faint`, `rule`, `rule-soft`, the seven `blue-*` variants, `vergina-gold`, `imperial-gold`, `olive-victor`, `olive-deep`, `phoenix-ember`, `phoenix-ash`, `tyrian-purple`, `athena-bronze`, `aegean-deep`, `santorini-cyan`, `terracotta`, `ochre`. Vergina-gold is reserved for micro accents (cursor, scanline) — don't use it for body text.
 
@@ -67,7 +67,7 @@ Available raw tokens (use only where a semantic alias doesn't fit): `paper`, `pa
 Components live under four directories:
 
 - `components/letter/` — the home page letter: `LetterChip` (disclosure button inside a sentence), `LetterNote` (the card it opens), `LetterMark` / `LetterSignature` (the outlined logo), `LetterIcon`.
-- `components/codex/` — Codex-identity surfaces used by the other pages (CodexNav, CodexFooter, SkipLink, Wordmark, ConsentBanner).
+- `components/codex/` — shared surfaces: SkipLink, ConsentBanner, CodexError (a failed section with a retry), and Wordmark (admin shell).
 - `components/admin/` — admin shell + CRUD forms (AdminDocumentEditor, AdminFieldRenderer, layouts/admin.vue consumers).
 - `components/layout/` — shared layout primitives.
 - `components/ui/` — shadcn-vue primitives: Avatar, Badge, Button, Card, Dialog, DropdownMenu, Input, Label, ScrollArea, Select, Separator, Sheet, Skeleton, Sonner, Table, Textarea.
@@ -90,13 +90,19 @@ Defined in `assets/css/tailwind.css`:
 - `.gaps` - Responsive gap (gap-3 sm:gap-6)
 - `.my-transition` - Standard transition (all 150ms ease-in-out)
 
+Defined in `assets/css/letter-pages.css`, for the inner public pages:
+
+- `layouts/default.vue` draws the frame: `.page-frame`, `.page-bar` (mark, name, section links), `.page-sheet`, `.page-footer`.
+- Page content uses `.page-*` classes: `page-title`, `page-lede`, `page-facts` (mono facts line), `page-section` (with an italic `h2`), `page-entries` / `page-entry`, `page-pills` / `page-pill`, `page-tags`, `page-dl`, `page-prose` (Markdown bodies) and `page-form` / `page-field`.
+
 ### File Structure Notes
 
 - `app.vue` - Mounts `<SkipLink />` globally + renders `<NuxtPage />`
-- `error.vue` - Root error boundary, brand-styled 404 + generic 5xx copy. Mounts `<SkipLink />` and `<ConsentBanner />` itself because `error.vue` fully replaces `app.vue` during error rendering — nothing from `app.vue` carries over.
+- `error.vue` - Root error boundary, brand-styled 404 + generic 5xx copy, inside the default layout. Mounts `<SkipLink />` and `<ConsentBanner />` itself because `error.vue` fully replaces `app.vue` during error rendering — nothing from `app.vue` carries over.
 - `pages/index.vue` - the letter. Its sentences live in `i18n/locales/en.json` under `letter.*`; the notes read work, writing, contact and social content from the snapshot. It opts out of the default layout.
 - `pages/[...slug].vue` - 404 catch-all
-- `components/codex/*` - Codex-identity components (Wordmark, SkipLink, CodexNav)
+- `layouts/default.vue` - the letter-style frame for every public page except home
+- `pages/work/*`, `pages/writing/*`, `pages/about.vue`, `pages/contact.vue` - inner pages; `/work` groups entries by `status` (`building` | `testing` | `live`, see `shared/workStatus.ts`) and shows a facts line from `formatWorkFacts` (`utils/workFormat.ts`)
 - `composables/useTheme.ts` - system theme sync
 - `i18n/locales/en.json` - i18n string table (English only)
 - `public/brand/` - Canonical brand assets: the Signature logo ("Mike." in Literata Italic, outlined), the adaptive `favicon.svg` plus PNG fallbacks, and the OG default image

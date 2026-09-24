@@ -1,0 +1,487 @@
+/* assets/css/letter-pages.css
+ *
+ * The inner pages (/work, /writing, /about, /contact, errors) in the
+ * letter style of the home page: a sheet of paper on the page, Literata
+ * for reading, JetBrains Mono for facts and chrome. `layouts/default.vue`
+ * draws the frame (bar, sheet, footer); the pages use the `page-*`
+ * classes below for their content. Colours come only from the
+ * `--letter-*` aliases in tokens.css, which swap with `data-theme`.
+ *
+ * The home page keeps its own scoped styles (`pages/index.vue`); the
+ * class names here don't overlap with it.
+ */
+
+body.letter-body {
+    background: var(--letter-bg);
+    font-family: var(--font-letter);
+}
+
+/* ── frame ─────────────────────────────────────────────────────────── */
+
+.page-frame {
+    min-height: 100vh;
+    background: var(--letter-bg);
+    color: var(--letter-text);
+    font-family: var(--font-letter);
+    font-optical-sizing: auto;
+    font-size: clamp(18px, 0.5vw + 15px, 20px);
+    line-height: 1.65;
+    padding: clamp(8px, 2vh, 24px) clamp(16px, 4vw, 48px) 0;
+}
+.page-frame a {
+    color: var(--letter-primary);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+.page-frame a:hover {
+    text-decoration-thickness: 2px;
+}
+.page-frame :focus-visible {
+    outline: 3px solid var(--letter-primary);
+    outline-offset: 3px;
+}
+
+.page-bar {
+    max-width: 46rem;
+    margin: 0 auto 10px;
+    padding: 0 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0 24px;
+    font: 14px/1.5 var(--font-mono);
+}
+.page-frame .page-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    color: var(--letter-text);
+    font-weight: 700;
+    text-decoration: none;
+}
+.page-frame .page-brand .letter-mark {
+    width: 30px;
+    height: 30px;
+    flex: none;
+}
+.page-bar nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 18px;
+}
+.page-frame .page-bar nav a {
+    display: inline-block;
+    padding-block: 12px;
+    color: var(--letter-soft);
+    text-decoration: none;
+}
+.page-frame .page-bar nav a:hover {
+    color: var(--letter-primary);
+    text-decoration: underline;
+}
+.page-frame .page-bar nav a.is-current {
+    color: var(--letter-text);
+    text-decoration: underline;
+    text-decoration-color: var(--letter-dot);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+}
+
+.page-sheet {
+    max-width: 46rem;
+    margin: 0 auto;
+    background: var(--letter-sheet);
+    border: 1px solid var(--letter-hairline);
+    border-radius: 28px;
+    padding: clamp(22px, 5vw, 56px) clamp(20px, 5vw, 64px) clamp(28px, 5vw, 56px);
+}
+
+.page-footer {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 22px 8px 32px;
+    font: 13px/1.6 var(--font-mono);
+    color: var(--letter-soft);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 20px;
+}
+.page-frame .page-footer a {
+    color: var(--letter-soft);
+    padding-block: 3px;
+}
+.page-frame .page-footer a:hover {
+    color: var(--letter-primary);
+}
+
+/* ── content ───────────────────────────────────────────────────────── */
+
+.page > :first-child {
+    margin-top: 0;
+}
+.page p {
+    margin: 0 0 1em;
+    max-width: 36em;
+}
+.page-kicker {
+    font: 13px/1.5 var(--font-mono);
+    color: var(--letter-soft);
+    margin: 0 0 10px;
+}
+.page-frame .page-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin: -10px 0 6px;
+    font: 14px/1.5 var(--font-mono);
+    color: var(--letter-soft);
+    text-decoration: none;
+}
+.page-frame .page-back:hover {
+    color: var(--letter-primary);
+    text-decoration: underline;
+}
+.page-frame .page-back .letter-icon {
+    width: 0.85em;
+    height: 0.85em;
+}
+.page-title {
+    font-size: clamp(32px, 2.2vw + 22px, 44px);
+    line-height: 1.12;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--letter-primary);
+    margin: 0 0 0.45em;
+    text-wrap: balance;
+}
+.page .page-facts {
+    font: 14px/1.6 var(--font-mono);
+    color: var(--letter-soft);
+    margin: 0 0 0.9em;
+}
+.page .page-lede {
+    font-size: 1.1em;
+    margin-bottom: 1.2em;
+}
+.page .page-soft {
+    color: var(--letter-soft);
+}
+
+.page-section {
+    margin-top: 2.2em;
+    padding-top: 1.5em;
+    border-top: 1px solid var(--letter-hairline);
+}
+.page-section > h2 {
+    font-size: 1.3em;
+    line-height: 1.25;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--letter-text);
+    margin: 0 0 0.8em;
+}
+
+/* lists of entries: work, writing, experience */
+.page-entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.page-entry {
+    padding: 1.1em 0;
+    border-top: 1px solid var(--letter-hairline);
+}
+.page-entry:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+.page-entry:last-child {
+    padding-bottom: 0;
+}
+.page-entry-title {
+    font-size: 1.1em;
+    line-height: 1.35;
+    font-weight: 700;
+    margin: 0 0 0.15em;
+}
+.page-frame .page-entry-title a {
+    color: var(--letter-text);
+    text-decoration: none;
+}
+.page-frame .page-entry-title a:hover {
+    color: var(--letter-primary);
+    text-decoration: underline;
+}
+.page-entry .page-facts {
+    margin-bottom: 0.35em;
+}
+.page-entry p:last-child {
+    margin-bottom: 0;
+}
+.page-bullets {
+    list-style: disc;
+    margin: 0 0 1em;
+    padding-left: 1.2em;
+    max-width: 36em;
+}
+.page-bullets li {
+    margin: 0.2em 0;
+}
+.page-bullets li::marker {
+    color: var(--letter-dot);
+}
+
+/* links out: pills like the home page's contact note */
+.page-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+    margin: 1.4em 0 0;
+    padding: 0;
+    list-style: none;
+}
+.page-frame .page-pill {
+    font: 500 15px var(--font-mono);
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 8px 16px 8px 14px;
+    border-radius: 14px;
+    border: 1.5px solid var(--letter-cta);
+    background: var(--letter-cta);
+    color: var(--letter-on-cta);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+.page-frame .page-pill:hover {
+    background: var(--letter-sheet);
+    color: var(--letter-text);
+    box-shadow: var(--letter-shadow);
+}
+.page-frame .page-pill--quiet {
+    background: none;
+    border-color: var(--letter-outline);
+    color: var(--letter-text);
+}
+.page-frame .page-pill .letter-icon {
+    width: 0.95em;
+    height: 0.95em;
+}
+.page-pill:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    box-shadow: none;
+}
+
+/* tags, skills */
+.page-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.page-tags li {
+    font: 14px/1.4 var(--font-mono);
+    padding: 5px 11px;
+    border-radius: 10px;
+    background: var(--letter-container);
+    color: var(--letter-on-container);
+}
+
+/* facts in two columns: about */
+.page-dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 22px;
+    margin: 0 0 1.4em;
+}
+.page-dl dt {
+    font: 14px/1.9 var(--font-mono);
+    color: var(--letter-soft);
+}
+.page-dl dd {
+    margin: 0;
+}
+
+.page-empty {
+    font: 15px/1.6 var(--font-mono);
+    color: var(--letter-soft);
+}
+
+/* Markdown bodies: /writing/<slug> */
+.page-prose {
+    max-width: 36em;
+}
+.page-prose > * {
+    margin: 0 0 1em;
+}
+.page-prose h2,
+.page-prose h3 {
+    line-height: 1.3;
+    margin: 1.8em 0 0.6em;
+}
+.page-prose h2 {
+    font-size: 1.3em;
+}
+.page-prose h3 {
+    font-size: 1.1em;
+}
+.page-prose ul,
+.page-prose ol {
+    padding-left: 1.3em;
+}
+.page-prose ul {
+    list-style: disc;
+}
+.page-prose ol {
+    list-style: decimal;
+}
+.page-prose li + li {
+    margin-top: 0.3em;
+}
+.page-prose li::marker {
+    color: var(--letter-dot);
+}
+.page-prose code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    padding: 0.1em 0.35em;
+    border-radius: 6px;
+    background: var(--letter-container);
+    color: var(--letter-on-container);
+}
+.page-prose pre {
+    font-size: 15px;
+    line-height: 1.55;
+    padding: 16px 18px;
+    border-radius: 14px;
+    border: 1px solid var(--letter-hairline);
+    background: var(--letter-bg);
+    /* Wrap rather than scroll: a scrolling block would need to be
+     * focusable for keyboard users (the Markdown HTML can't carry a
+     * tabindex), and posts keep their code short. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.page-prose pre code {
+    padding: 0;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+}
+.page-prose blockquote {
+    margin-left: 0;
+    padding-left: 1em;
+    border-left: 3px solid var(--letter-outline);
+    color: var(--letter-soft);
+    font-style: italic;
+}
+.page-prose img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 14px;
+}
+.page-prose hr {
+    border: 0;
+    border-top: 1px solid var(--letter-hairline);
+    margin: 2em 0;
+}
+
+/* forms: /contact */
+.page-form {
+    display: grid;
+    gap: 18px;
+    max-width: 36em;
+}
+.page-field-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+.page-field {
+    display: grid;
+    gap: 6px;
+}
+.page-field > span {
+    font: 14px/1.4 var(--font-mono);
+    color: var(--letter-soft);
+}
+.page-field input,
+.page-field textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--letter-text);
+    background: var(--letter-bg);
+    border: 1.5px solid var(--letter-outline);
+    border-radius: 14px;
+    padding: 10px 14px;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+.page-field textarea {
+    min-height: 11rem;
+    resize: vertical;
+}
+.page-field input:hover,
+.page-field textarea:hover {
+    border-color: var(--letter-primary);
+}
+.page-frame .page-field input:focus-visible,
+.page-frame .page-field textarea:focus-visible {
+    outline: none;
+    border-color: var(--letter-primary);
+    box-shadow: 0 0 0 3px var(--letter-hairline);
+}
+.page-field input[aria-invalid="true"],
+.page-field textarea[aria-invalid="true"] {
+    border-color: var(--letter-error);
+}
+.page-field small,
+.page-form-status {
+    font: 14px/1.4 var(--font-mono);
+    color: var(--letter-error);
+}
+.page-form-status:empty {
+    display: none;
+}
+
+@media (min-width: 1080px) {
+    .page-sheet {
+        padding: 56px 72px;
+    }
+}
+@media (max-width: 560px) {
+    .page-sheet {
+        border-radius: 22px;
+    }
+    .page-dl {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    .page-dl dd {
+        margin-bottom: 10px;
+    }
+    .page-field-row {
+        grid-template-columns: 1fr;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .page-pill,
+    .page-field input,
+    .page-field textarea {
+        transition: none;
+    }
+}

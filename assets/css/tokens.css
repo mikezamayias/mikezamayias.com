@@ -104,6 +104,7 @@
     --letter-hairline: color-mix(in oklab, var(--blue-modern) 16%, var(--argent));
     --letter-dot: var(--ochre); /* the logo's full stop */
     --letter-shadow: 0 8px 20px color-mix(in oklch, var(--aegean-deep) 22%, transparent);
+    --letter-error: var(--phoenix-ember); /* form errors */
 }
 
 html[data-theme="dark"] {
@@ -143,4 +144,5 @@ html[data-theme="dark"] {
     --letter-outline: color-mix(in oklab, var(--letter-primary) 60%, var(--letter-sheet));
     --letter-hairline: color-mix(in oklab, var(--letter-primary) 20%, var(--letter-sheet));
     --letter-shadow: 0 8px 20px color-mix(in oklch, black 40%, transparent);
+    --letter-error: color-mix(in oklab, var(--phoenix-ember) 55%, var(--argent));
 }

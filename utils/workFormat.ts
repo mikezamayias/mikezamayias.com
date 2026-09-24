@@ -9,8 +9,40 @@
  * place.
  *
  * `formatWorkStack` mirrors the same idea for `stack` — the array
- * lives in Firestore, the public site joins with `·`.
+ * lives in Firestore as lowercase tags (`flutter`, `openai`), the public
+ * site shows their proper names joined with `·`.
  */
+
+import { isWorkStatus } from "#shared/workStatus";
+
+// Proper names for the stack tags in Firestore. A tag that isn't listed
+// is shown as written, so a new one never disappears.
+const STACK_NAMES: Record<string, string> = {
+    dart: "Dart",
+    firebase: "Firebase",
+    firestore: "Firestore",
+    flutter: "Flutter",
+    healthkit: "HealthKit",
+    kotlin: "Kotlin",
+    nuxt: "Nuxt",
+    "nuxt 4": "Nuxt 4",
+    openai: "OpenAI",
+    postgres: "PostgreSQL",
+    postgresql: "PostgreSQL",
+    react: "React",
+    supabase: "Supabase",
+    swift: "Swift",
+    swiftui: "SwiftUI",
+    ts: "TypeScript",
+    typescript: "TypeScript",
+    vite: "Vite",
+    vue: "Vue",
+};
+
+export function formatStackTag(tag: string): string {
+    const trimmed = tag.trim();
+    return STACK_NAMES[trimmed.toLowerCase()] ?? trimmed;
+}
 
 const SHORT_MONTHS = [
     "Jan",
@@ -68,10 +100,29 @@ export function formatWorkRange(input: WorkRangeInput): string {
 export function formatWorkStack(input: unknown): string {
     if (Array.isArray(input)) {
         return input
-            .map((item) => String(item).trim())
+            .map((item) => formatStackTag(String(item)))
             .filter(Boolean)
             .join(" · ");
     }
     if (typeof input === "string") return input;
     return "";
+}
+
+/**
+ * The facts line for a work entry, as readers see it:
+ * "Flutter · OpenAI · iOS · open for testing". Stack, then platform, then
+ * status; any of them may be missing. `t` resolves the status label from
+ * `work.status.*` in the locale file.
+ */
+export function formatWorkFacts(
+    entry: { stack?: unknown; platform?: unknown; status?: unknown },
+    t: (key: string) => string
+): string {
+    return [
+        formatWorkStack(entry.stack),
+        typeof entry.platform === "string" ? entry.platform.trim() : "",
+        isWorkStatus(entry.status) ? t(`work.status.${entry.status}`) : "",
+    ]
+        .filter(Boolean)
+        .join(" · ");
 }
