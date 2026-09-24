@@ -147,6 +147,29 @@ export default defineNuxtConfig({
                     rel: "apple-touch-icon",
                     href: "/apple-touch-icon.png?v=20260924",
                 },
+                // The fonts the letter depends on (assets/css/fonts.css),
+                // preloaded so they are in hand before first paint.
+                {
+                    rel: "preload",
+                    as: "font",
+                    type: "font/woff2",
+                    href: "/fonts/literata-latin.woff2",
+                    crossorigin: "anonymous",
+                },
+                {
+                    rel: "preload",
+                    as: "font",
+                    type: "font/woff2",
+                    href: "/fonts/literata-latin-italic.woff2",
+                    crossorigin: "anonymous",
+                },
+                {
+                    rel: "preload",
+                    as: "font",
+                    type: "font/woff2",
+                    href: "/fonts/jetbrains-mono-latin.woff2",
+                    crossorigin: "anonymous",
+                },
                 {
                     rel: "alternate",
                     type: "application/rss+xml",
@@ -356,15 +379,12 @@ export default defineNuxtConfig({
         preconnect: true,
         preload: true,
         useStylesheet: true,
-        // font-display: optional. With `swap`, text painted in the
-        // fallback font re-flowed when the web font arrived: Lighthouse
-        // measured a 0.15 layout shift on the home hero as the GFS fonts
-        // loaded. `optional` gives the font a ~100 ms block period and then
-        // never swaps, so nothing moves after first paint. With `preload`
-        // above, the self-hosted files usually arrive in time; on a slow
-        // first visit the fallback stays for that page view, and the
-        // cached font is used from then on. It also satisfies Lighthouse's
-        // `font-display` audit, which only flags `auto`/`block`.
+        // font-display: optional for these secondary faces. With `swap`,
+        // text painted in the fallback re-flowed when the web font arrived:
+        // Lighthouse measured a 0.15 layout shift on the old home hero as
+        // the GFS fonts loaded. `optional` never swaps after first paint;
+        // on a slow first visit the fallback stays for that page view. The
+        // fonts the letter relies on are preloaded separately with `swap`.
         display: "optional",
         // `base64: true` previously inlined every woff2 as base64 inside
         // the generated `/css/nuxt-google-fonts.css` — that file ballooned
@@ -372,9 +392,8 @@ export default defineNuxtConfig({
         // subset, and it loaded synchronously in the critical path. Set
         // to false so fonts ship as external woff2 files (cacheable,
         // requestable in parallel, and not bytes Lighthouse counts
-        // against FCP/LCP/Speed Index). The Cumulative-Layout-Shift cost
-        // is handled by `font-display: optional` plus `preload: true`
-        // above issuing rel=preload for each subset.
+        // against FCP/LCP/Speed Index). The layout-shift cost is handled by
+        // `font-display: optional` below.
         base64: false,
         inject: true,
         download: true,
@@ -385,9 +404,8 @@ export default defineNuxtConfig({
         // downloaded for nothing. Dropped here; if a future component
         // needs Inter, add it back with the minimum weight set.
         families: {
-            // Literata: the letter on the home page, and the logo's face.
-            Literata: { wght: [400, 500, 600], ital: [400, 500] },
-            "JetBrains+Mono": { wght: [400, 500, 600, 700] },
+            // Literata and JetBrains Mono are self-hosted and preloaded
+            // instead (assets/css/fonts.css, public/fonts/).
             "GFS+Didot": { wght: [400] },
             "GFS+Neohellenic": { wght: [400, 700] },
             "Cormorant+Garamond": { wght: [400, 700] },

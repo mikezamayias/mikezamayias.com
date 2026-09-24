@@ -2,6 +2,7 @@
  * Tailwind base + global styles. Tokens come from tokens.css.
  */
 
+@import url("./fonts.css");
 @import url("./tokens.css");
 @import url("./transitions.css");
 @import url("./codex-patterns.css");
