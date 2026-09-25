@@ -62,7 +62,7 @@ export default defineNuxtConfig({
                     tagPriority: "critical",
                 },
             ],
-            title: "mz · Mike Zamayias",
+            title: "Mike Zamayias · Mobile engineer",
             meta: [
                 { charset: "utf-8" },
                 { name: "viewport", content: "width=device-width, initial-scale=1" },
@@ -90,7 +90,7 @@ export default defineNuxtConfig({
                         "Mike Zamayias, mobile engineer in Heraklion, Crete. Flutter and native Android apps.",
                 },
                 // Open Graph
-                { property: "og:title", content: "mz · Mike Zamayias" },
+                { property: "og:title", content: "Mike Zamayias · Mobile engineer" },
                 {
                     property: "og:description",
                     content:
@@ -109,7 +109,7 @@ export default defineNuxtConfig({
                 { name: "twitter:card", content: "summary_large_image" },
                 { name: "twitter:site", content: "@mikezamayias" },
                 { name: "twitter:creator", content: "@mikezamayias" },
-                { name: "twitter:title", content: "mz · Mike Zamayias" },
+                { name: "twitter:title", content: "Mike Zamayias · Mobile engineer" },
                 {
                     name: "twitter:description",
                     content:
