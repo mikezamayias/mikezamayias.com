@@ -138,11 +138,6 @@
                 "kind": "live",
                 "url": "https://efimeries.pages.dev",
                 "label": "efimeries.pages.dev"
-            },
-            {
-                "kind": "repo",
-                "url": "https://github.com/mikezamayias/efimeries",
-                "label": "Source on GitHub"
             }
         ]
     },
