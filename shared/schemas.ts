@@ -9,11 +9,20 @@ const PerLocale = <T extends z.ZodTypeAny>(shape: T) =>
         .object({ en: shape.optional(), el: shape.optional() })
         .refine((v) => v.en || v.el, "at least one locale required");
 
+// `YYYY-MM` from the admin month picker, or `YYYY` for year-only entries.
+const MonthOrYear = z.string().regex(/^\d{4}(-(0[1-9]|1[0-2]))?$/);
+
 export const WorkSchema = z.object({
     slug: z.string().regex(SlugRegex),
-    yr: z.string().max(16),
-    stack: z.string().max(64),
-    glyph: z.string().max(4),
+    // `start`/`end` replaced the free-text `yr` label; older entries may
+    // still carry `yr`, newer ones only `start`.
+    yr: z.string().max(16).optional(),
+    start: MonthOrYear.optional(),
+    end: MonthOrYear.optional(),
+    // Lowercase tags as the admin saves them (`["flutter", "openai"]`).
+    // A single string is the older shape and still accepted.
+    stack: z.union([z.array(z.string().min(1).max(32)).max(20), z.string().max(64)]),
+    glyph: z.string().max(4).optional(),
     order: z.number().int(),
     published: z.boolean(),
     status: z.enum(WORK_STATUSES).optional(),
