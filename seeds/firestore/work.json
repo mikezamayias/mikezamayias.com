@@ -71,7 +71,7 @@
     {
         "slug": "noima",
         "start": "2026-08",
-        "stack": ["react", "vite"],
+        "stack": ["flutter"],
         "status": "building",
         "glyph": "N",
         "order": 3,
@@ -138,11 +138,6 @@
                 "kind": "live",
                 "url": "https://efimeries.pages.dev",
                 "label": "efimeries.pages.dev"
-            },
-            {
-                "kind": "repo",
-                "url": "https://github.com/mikezamayias/efimeries",
-                "label": "Source on GitHub"
             }
         ]
     },
