@@ -21,6 +21,35 @@ describe("WorkSchema", () => {
         });
         expect(v.success).toBe(true);
     });
+    it("accepts an entry as the admin saves it: stack tags, start/end, no yr", () => {
+        const v = WorkSchema.safeParse({
+            slug: "efimeries",
+            start: "2024-01",
+            stack: ["nuxt", "typescript"],
+            order: 5,
+            published: true,
+            status: "live",
+            platform: "Web",
+            locales_available: ["en"],
+            locale: { en: { name: "Efimeries", desc: "d", long: "" } },
+            links: [{ kind: "live", url: "https://efimeries.pages.dev" }],
+        });
+        expect(v.success).toBe(true);
+        // start/end survive parsing, since the admin writes parsed.data.
+        expect(v.success && v.data.start).toBe("2024-01");
+    });
+    it("rejects a malformed start month", () => {
+        const v = WorkSchema.safeParse({
+            slug: "ok",
+            start: "2024-13",
+            stack: [],
+            order: 0,
+            published: true,
+            locales_available: ["en"],
+            locale: { en: { name: "n", desc: "d", long: "" } },
+        });
+        expect(v.success).toBe(false);
+    });
     it("rejects bad slug", () => {
         const v = WorkSchema.safeParse({
             slug: "BAD UPPERCASE",

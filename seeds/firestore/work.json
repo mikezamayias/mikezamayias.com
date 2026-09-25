@@ -21,11 +21,6 @@
                 "kind": "appstore",
                 "url": "https://testflight.apple.com/join/qBYPPDhN",
                 "label": "Join the TestFlight beta"
-            },
-            {
-                "kind": "live",
-                "url": "https://healpen.app",
-                "label": "healpen.app"
             }
         ]
     },
@@ -76,7 +71,7 @@
     {
         "slug": "noima",
         "start": "2026-08",
-        "stack": ["react", "vite"],
+        "stack": ["flutter"],
         "status": "building",
         "glyph": "N",
         "order": 3,
@@ -143,11 +138,6 @@
                 "kind": "live",
                 "url": "https://efimeries.pages.dev",
                 "label": "efimeries.pages.dev"
-            },
-            {
-                "kind": "repo",
-                "url": "https://github.com/mikezamayias/efimeries",
-                "label": "Source on GitHub"
             }
         ]
     },
