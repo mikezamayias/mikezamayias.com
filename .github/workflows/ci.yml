@@ -27,7 +27,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
@@ -46,7 +46,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
@@ -79,7 +79,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
@@ -103,7 +103,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
@@ -125,7 +125,7 @@ jobs:
         timeout-minutes: 20
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
@@ -200,7 +200,7 @@ jobs:
             PREVIEW_URL: ${{ needs.preview.outputs.preview_url }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Wait for the preview channel
               run: |
@@ -310,7 +310,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Download Build Artifact
               id: build-artifact
@@ -413,7 +413,7 @@ jobs:
             preview_url: ${{ steps.resolved_preview_url.outputs.url }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Download Build Artifact
               id: build-artifact
