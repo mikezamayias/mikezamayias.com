@@ -1,7 +1,7 @@
 [
     {
         "slug": "healpen",
-        "start": "2024-01",
+        "start": "2023-06",
         "stack": ["flutter", "openai"],
         "platform": "iOS",
         "status": "testing",
@@ -51,7 +51,7 @@
     },
     {
         "slug": "peakward",
-        "start": "2023-01",
+        "start": "2026-01",
         "stack": ["flutter", "postgres"],
         "platform": "iOS",
         "status": "building",
@@ -71,7 +71,7 @@
     {
         "slug": "noima",
         "start": "2026-08",
-        "stack": ["react", "vite"],
+        "stack": ["flutter"],
         "status": "building",
         "glyph": "N",
         "order": 3,
@@ -88,7 +88,7 @@
     },
     {
         "slug": "famon",
-        "start": "2024-09",
+        "start": "2025-11",
         "stack": ["dart", "firebase"],
         "platform": "CLI",
         "status": "live",
@@ -118,7 +118,7 @@
     },
     {
         "slug": "efimeries",
-        "start": "2024-01",
+        "start": "2026-03",
         "stack": ["nuxt", "typescript"],
         "platform": "Web",
         "status": "live",
@@ -138,11 +138,6 @@
                 "kind": "live",
                 "url": "https://efimeries.pages.dev",
                 "label": "efimeries.pages.dev"
-            },
-            {
-                "kind": "repo",
-                "url": "https://github.com/mikezamayias/efimeries",
-                "label": "Source on GitHub"
             }
         ]
     },
@@ -189,7 +184,7 @@
     },
     {
         "slug": "localmind",
-        "start": "2024-06",
+        "start": "2026-03",
         "stack": ["flutter"],
         "glyph": "L",
         "order": 8,
