@@ -1,7 +1,7 @@
 [
     {
         "slug": "healpen",
-        "start": "2024-01",
+        "start": "2023-06",
         "stack": ["flutter", "openai"],
         "platform": "iOS",
         "status": "testing",
@@ -57,7 +57,7 @@
     },
     {
         "slug": "peakward",
-        "start": "2023-01",
+        "start": "2026-01",
         "stack": ["flutter", "postgres"],
         "platform": "iOS",
         "status": "building",
@@ -94,7 +94,7 @@
     },
     {
         "slug": "famon",
-        "start": "2024-09",
+        "start": "2025-11",
         "stack": ["dart", "firebase"],
         "platform": "CLI",
         "status": "live",
@@ -124,7 +124,7 @@
     },
     {
         "slug": "efimeries",
-        "start": "2024-01",
+        "start": "2026-03",
         "stack": ["nuxt", "typescript"],
         "platform": "Web",
         "status": "live",
@@ -190,7 +190,7 @@
     },
     {
         "slug": "localmind",
-        "start": "2024-06",
+        "start": "2026-03",
         "stack": ["flutter"],
         "glyph": "L",
         "order": 8,
