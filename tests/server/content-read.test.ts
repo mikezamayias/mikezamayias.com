@@ -265,6 +265,25 @@ describe("public portfolio sanitizers", () => {
         expect(result.intro.en).not.toMatch(/audit|indie/i);
     });
 
+    it("drops discontinued work from public reads", () => {
+        const result = sanitizePublicCollection(
+            "work",
+            [
+                { id: "mighty", slug: "mighty" },
+                { id: "healpen", slug: "healpen" },
+            ],
+            false
+        );
+
+        expect(result.map((entry) => entry.id)).toEqual(["healpen"]);
+    });
+
+    it("keeps discontinued work available to admins", () => {
+        const result = sanitizePublicCollection("work", [{ id: "mighty", slug: "mighty" }], true);
+
+        expect(result.map((entry) => entry.id)).toEqual(["mighty"]);
+    });
+
     it("removes old independent-position experience from public reads", () => {
         const result = sanitizePublicCollection(
             "experience",
@@ -321,7 +340,7 @@ describe("public portfolio sanitizers", () => {
                 intro: { en: "Paid audits and indie templates live by Q3." },
                 target: { en: "Q3 2026" },
             },
-            work: [],
+            work: [{ slug: "mighty" } as never, { slug: "healpen" } as never],
             writing: [],
             roadmap: [
                 {
@@ -337,6 +356,7 @@ describe("public portfolio sanitizers", () => {
         });
 
         expect(result.roadmap).toEqual([]);
+        expect(result.work.map((entry) => entry.slug)).toEqual(["healpen"]);
         expect(result.roadmap_meta?.intro.en).not.toMatch(/audit|indie/i);
     });
 });

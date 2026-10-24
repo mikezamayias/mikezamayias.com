@@ -4,7 +4,6 @@
         faArrowUpRightFromSquare,
         faBrain,
         faCode,
-        faComputerMouse,
         faCopy,
         faEnvelope,
         faFeather,
@@ -57,7 +56,6 @@
 
     const workChips: WorkChip[] = [
         { slot: "healpen", slug: "healpen", icon: faFeather, name: "Healpen" },
-        { slot: "mighty", slug: "mighty", icon: faComputerMouse, name: "Mighty" },
         { slot: "peakward", slug: "peakward", icon: faPersonRunning, name: "Peakward" },
         { slot: "noima", slug: "noima", icon: faBrain, name: "Noima" },
         { slot: "famon", slug: "famon", icon: faTerminal, name: "famon" },
@@ -71,7 +69,7 @@
         },
     ];
     const workParagraphs = [
-        { key: "letter.apps", slots: ["healpen", "mighty", "peakward", "noima"] },
+        { key: "letter.apps", slots: ["healpen", "peakward", "noima"] },
         { key: "letter.tools", slots: ["famon", "efimeries", "site"] },
     ];
 
