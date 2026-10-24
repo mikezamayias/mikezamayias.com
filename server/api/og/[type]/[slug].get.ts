@@ -10,6 +10,7 @@
 import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
 import * as Sentry from "@sentry/nuxt";
+import { isRetiredWorkSlug } from "#shared/retiredWork";
 import { useFirebaseAdmin } from "~/server/utils/firebase";
 import { isH3Error } from "~/server/utils/errors";
 
@@ -52,6 +53,9 @@ export default defineEventHandler(async (event) => {
     // means env vars weren't injected; that is an operator misconfiguration
     // and should fail loudly rather than degrade silently.
     const { firestore } = useFirebaseAdmin();
+    if (type === "work" && isRetiredWorkSlug(slug)) {
+        throw createError({ statusCode: 404, message: "Not found" });
+    }
     const collection = type === "work" ? "work" : "writing";
     let title: string = slug;
     let subtitle = "";

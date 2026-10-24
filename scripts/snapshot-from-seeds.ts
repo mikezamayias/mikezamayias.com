@@ -11,6 +11,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { isRetiredWorkSlug } from "../shared/retiredWork";
 
 type Doc = Record<string, unknown>;
 
@@ -49,7 +50,10 @@ const out: Record<string, Doc[]> = {};
 for (const [name, file, key] of collections) {
     let docs: Doc[] = readSeed<Doc[]>(file).map((d) => ({ ...clean(d), id: String(d[key]) }));
     // Mirror the public queries in snapshot-content.ts.
-    if (name === "work") docs = docs.filter((d) => d.published === true).sort(byOrder);
+    if (name === "work")
+        docs = docs
+            .filter((d) => d.published === true && !isRetiredWorkSlug(String(d.slug ?? d.id ?? "")))
+            .sort(byOrder);
     else if (name === "writing")
         docs = docs
             .filter((d) => d.published === true)

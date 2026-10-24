@@ -2,6 +2,7 @@
     import { faArrowLeft, faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
     import CodexError from "~/components/codex/CodexError.vue";
     import LetterIcon from "~/components/letter/LetterIcon.vue";
+    import { isRetiredWorkSlug } from "#shared/retiredWork";
     import { formatWorkFacts, formatWorkRange } from "~/utils/workFormat";
 
     // /work/<slug>: one entry. The long copy is plain text from admin;
@@ -10,6 +11,16 @@
     const { locale, t } = useI18n();
     const localePath = useLocalePath();
     const slug = computed(() => String(route.params.slug));
+    // Retired entries 404, including on the Firebase SSR host. The static
+    // deploy also refuses to prerender them (see nuxt.config.ts), so the
+    // Worker serves the site 404 page for a direct request.
+    if (isRetiredWorkSlug(slug.value)) {
+        throw createError({
+            statusCode: 404,
+            statusMessage: "Page Not Found",
+            fatal: true,
+        });
+    }
     const { data: work, error, refresh } = await useWorkEntry(slug);
 
     const copy = computed(() => work.value?.locale?.[locale.value] ?? null);

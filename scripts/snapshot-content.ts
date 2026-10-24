@@ -24,6 +24,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { COLLECTION_SCHEMAS, SINGLETON_SCHEMAS } from "../server/utils/schemas";
+import { isRetiredWorkSlug } from "../shared/retiredWork";
 
 // ── env validation ───────────────────────────────────────────────────
 const apiKey = process.env.NUXT_PUBLIC_FIREBASE_API_KEY;
@@ -226,6 +227,14 @@ async function main() {
 
         for (const d of snap.docs) {
             const data = d.data() as Record<string, unknown>;
+            // Drop discontinued work even when the Firestore doc is still there.
+            // A seed edit does not delete the live document.
+            if (
+                def.name === "work" &&
+                (isRetiredWorkSlug(d.id) || isRetiredWorkSlug(String(data.slug ?? "")))
+            ) {
+                continue;
+            }
             const raw = normaliseTimestamps({ id: d.id, ...data }) as Record<string, unknown>;
             const schema = COLLECTION_SCHEMAS[def.name as keyof typeof COLLECTION_SCHEMAS];
             if (schema) {
