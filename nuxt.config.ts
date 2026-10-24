@@ -1,4 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { RETIRED_WORK_SLUGS } from "./shared/retiredWork";
+
+const retiredWorkRoutes = RETIRED_WORK_SLUGS.map((slug) => `/work/${slug}`);
+
 export default defineNuxtConfig({
     ssr: true,
     runtimeConfig: {
@@ -228,7 +232,7 @@ export default defineNuxtConfig({
         // covers crawlers that find admin URLs through other channels;
         // the sitemap exclusion just stops us actively pointing crawlers
         // at them.
-        exclude: ["/admin/**", "/auth-redirect"],
+        exclude: ["/admin/**", "/auth-redirect", ...retiredWorkRoutes],
     },
     security: {
         // Disable security headers in dev: nuxt-security's CSP blocks Vite's
@@ -466,7 +470,14 @@ export default defineNuxtConfig({
             // with the next Deploy run. `crawlLinks` follows the work and
             // writing links on the index pages to prerender each detail page.
             crawlLinks: true,
-            ignore: [(route) => route.startsWith("/api") || route.startsWith("/auth-redirect")],
+            ignore: [
+                (route) =>
+                    route.startsWith("/api") ||
+                    route.startsWith("/auth-redirect") ||
+                    retiredWorkRoutes.some(
+                        (retired) => route === retired || route.startsWith(`${retired}/`)
+                    ),
+            ],
             routes: [
                 "/",
                 "/work",

@@ -25,31 +25,6 @@
         ]
     },
     {
-        "slug": "mighty",
-        "start": "2025-12",
-        "stack": ["swiftui"],
-        "platform": "macOS",
-        "status": "testing",
-        "glyph": "M",
-        "order": 1,
-        "published": true,
-        "locales_available": ["en"],
-        "locale": {
-            "en": {
-                "name": "Mighty",
-                "desc": "Battery status and advanced controls for supported Logitech mice on the Mac.",
-                "long": "- Battery status for supported Logitech mice\n- Advanced controls over HID++, through supported Logitech receivers\n- Native SwiftUI\n- Install with Homebrew: brew install --cask mikezamayias/mighty/mighty"
-            }
-        },
-        "links": [
-            {
-                "kind": "live",
-                "url": "https://mighty.mikezamayias.com",
-                "label": "mighty.mikezamayias.com"
-            }
-        ]
-    },
-    {
         "slug": "peakward",
         "start": "2023-01",
         "stack": ["flutter", "postgres"],

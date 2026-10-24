@@ -1,5 +1,6 @@
 import type { HomePayload } from "~/composables/useHomeData";
 import type { RoadmapDoc, RoadmapEntry } from "~/firebase/types";
+import { isRetiredWorkSlug } from "#shared/retiredWork";
 
 type PublicDoc = object & { id?: string };
 
@@ -58,6 +59,12 @@ function sanitizePublicExperienceEntry<T extends PublicDoc>(entry: T): T | null 
     return sanitizeExperienceCopy(entry) as T;
 }
 
+function isRetiredWork(doc: PublicDoc): boolean {
+    const slug = (doc as { slug?: unknown }).slug;
+    if (typeof slug === "string" && isRetiredWorkSlug(slug)) return true;
+    return isRetiredWorkSlug(doc.id);
+}
+
 export function sanitizePublicRoadmapEntries<T extends RoadmapEntry | PublicDoc>(
     entries: T[]
 ): T[] {
@@ -70,6 +77,7 @@ export function sanitizePublicCollection<T extends PublicDoc>(
     isAdmin: boolean
 ): T[] {
     if (isAdmin) return docs;
+    if (collection === "work") return docs.filter((doc) => !isRetiredWork(doc));
     if (collection === "roadmap") return sanitizePublicRoadmapEntries(docs);
     if (collection === "experience") {
         return docs
@@ -99,6 +107,7 @@ export function sanitizePublicSingleton<T extends PublicDoc>(
 export function sanitizePublicHomePayload(payload: HomePayload): HomePayload {
     return {
         ...payload,
+        work: payload.work.filter((entry) => !isRetiredWorkSlug(entry.slug)),
         roadmap_meta: sanitizePublicRoadmapMeta(payload.roadmap_meta),
         roadmap: sanitizePublicRoadmapEntries(payload.roadmap),
     };
