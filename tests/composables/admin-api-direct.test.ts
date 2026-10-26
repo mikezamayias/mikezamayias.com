@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import * as Sentry from "@sentry/nuxt";
 
 const setDocMock = vi.fn(async () => {});
+const updateDocMock = vi.fn(async () => {});
 const deleteDocMock = vi.fn(async () => {});
 const addDocMock = vi.fn(async () => ({ id: "audit-1" }));
 const getDocMock = vi.fn();
@@ -14,7 +15,11 @@ vi.mock("firebase/firestore", () => ({
     getFirestore: vi.fn(() => ({})),
     collection: vi.fn((_db, name) => ({ path: name })),
     doc: vi.fn((_db, col, id) => ({ path: `${col}/${id}` })),
+    query: vi.fn((...parts: unknown[]) => ({ path: "query", parts })),
+    orderBy: vi.fn((field: string, direction: string) => ({ orderBy: field, direction })),
+    limit: vi.fn((n: number) => ({ limit: n })),
     setDoc: setDocMock,
+    updateDoc: updateDocMock,
     deleteDoc: deleteDocMock,
     addDoc: addDocMock,
     getDoc: getDocMock,
@@ -58,6 +63,7 @@ const stateBag = new Map<string, ReturnType<typeof ref>>();
 beforeEach(() => {
     vi.clearAllMocks();
     setDocMock.mockReset().mockResolvedValue(undefined);
+    updateDocMock.mockReset().mockResolvedValue(undefined);
     deleteDocMock.mockReset().mockResolvedValue(undefined);
     addDocMock.mockReset().mockResolvedValue({ id: "audit-1" });
     fetchMock.mockReset().mockResolvedValue({ success: true });
@@ -350,24 +356,45 @@ describe("useAdminApi direct firestore operations", () => {
         );
     });
 
-    it("listMessages and updateMessage delegate to adminFetch", async () => {
+    it("listMessages and updateMessage use the Firestore client, not /api/admin/messages", async () => {
+        getDocsMock.mockResolvedValueOnce({
+            docs: [
+                {
+                    id: "msg-1",
+                    data: () => ({
+                        name: "Ada",
+                        email: "ada@example.com",
+                        message: "Hello",
+                        read: false,
+                    }),
+                },
+            ],
+        });
         const api = await loadComposable();
 
-        await api.listMessages(20);
-        expect(fetchMock).toHaveBeenCalledWith(
-            "/api/admin/messages",
-            expect.objectContaining({
-                query: { limit: 20 },
-            })
-        );
+        const rows = await api.listMessages(20);
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(getDocsMock).toHaveBeenCalledTimes(1);
+        expect(rows).toEqual([
+            {
+                id: "msg-1",
+                name: "Ada",
+                email: "ada@example.com",
+                message: "Hello",
+                read: false,
+            },
+        ]);
+
+        const { query, orderBy, limit } = await import("firebase/firestore");
+        expect(query).toHaveBeenCalled();
+        expect(orderBy).toHaveBeenCalledWith("createdAt", "desc");
+        expect(limit).toHaveBeenCalledWith(20);
 
         await api.updateMessage("msg-1", true);
-        expect(fetchMock).toHaveBeenCalledWith(
-            "/api/admin/messages/msg-1",
-            expect.objectContaining({
-                method: "PATCH",
-                body: { read: true },
-            })
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(updateDocMock).toHaveBeenCalledWith(
+            { path: "messages/msg-1" },
+            { read: true, updatedAt: serverTimestampSentinel }
         );
     });
 });

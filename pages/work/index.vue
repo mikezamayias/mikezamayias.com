@@ -1,6 +1,7 @@
 <script setup lang="ts">
     import CodexError from "~/components/codex/CodexError.vue";
     import { WORK_STATUSES, type WorkStatus } from "#shared/workStatus";
+    import { pendingWorkLinksFor } from "~/utils/pendingWorkLinks";
     import { formatWorkFacts } from "~/utils/workFormat";
     import type { Work } from "~/firebase/types";
 
@@ -67,6 +68,16 @@
                     </h3>
                     <p v-if="factsOf(entry)" class="page-facts">{{ factsOf(entry) }}</p>
                     <p v-if="entry.locale?.[locale]?.desc">{{ entry.locale[locale]!.desc }}</p>
+                    <p
+                        v-for="pending in pendingWorkLinksFor(entry.slug)"
+                        :key="pending.label"
+                        class="page-facts"
+                    >
+                        <a v-if="pending.url" :href="pending.url" target="_blank" rel="noopener">{{
+                            pending.label
+                        }}</a
+                        ><template v-else>{{ pending.label }}</template>
+                    </p>
                 </li>
             </ul>
         </section>

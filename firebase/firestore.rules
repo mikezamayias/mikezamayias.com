@@ -47,6 +47,17 @@ service cloud.firestore {
           || (name == 'roadmap' && hasOnlyAffectedKeys(['goal', 'target', 'intro', 'id', 'createdAt', 'updatedAt']));
     }
 
+    // Keys the admin work editor actually writes (WorkSchema +
+    // utils/adminContent.ts). `start`/`end` replaced the free-text `yr`,
+    // and `status` (`building` | `testing` | `live`) plus `platform` are
+    // first-class fields. Leaving them off this list makes every Save
+    // fail with permission-denied: rules report that as
+    // "Missing or insufficient permissions", including for an allowlisted
+    // admin. `yr` stays so older documents can still be touched.
+    function workKeys() {
+      return ['slug', 'yr', 'start', 'end', 'stack', 'platform', 'status', 'glyph', 'order', 'published', 'locales_available', 'locale', 'links', 'images', 'id', 'createdAt', 'updatedAt'];
+    }
+
     // Public collections. `allow list` requires the query to carry the
     // visibility filter: referencing `resource.data` here forces the client
     // to include the matching `where()` clause, or Firestore rejects the
@@ -58,10 +69,10 @@ service cloud.firestore {
       allow list: if isAdmin() || (request.query.limit != null && request.query.limit <= 100 && resource.data.published == true);
       allow create: if isAdmin()
         && request.resource.data.updatedAt is timestamp
-        && hasOnlyKeys(['slug', 'yr', 'stack', 'glyph', 'order', 'published', 'locales_available', 'locale', 'links', 'images', 'id', 'createdAt', 'updatedAt']);
+        && hasOnlyKeys(workKeys());
       allow update: if isAdmin()
         && hasValidUpdatedAtOnUpdate()
-        && hasOnlyAffectedKeys(['slug', 'yr', 'stack', 'glyph', 'order', 'published', 'locales_available', 'locale', 'links', 'images', 'id', 'createdAt', 'updatedAt']);
+        && hasOnlyAffectedKeys(workKeys());
       allow delete: if isAdmin();
     }
 

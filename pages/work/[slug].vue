@@ -3,6 +3,7 @@
     import CodexError from "~/components/codex/CodexError.vue";
     import LetterIcon from "~/components/letter/LetterIcon.vue";
     import { isRetiredWorkSlug } from "#shared/retiredWork";
+    import { pendingWorkLinksFor } from "~/utils/pendingWorkLinks";
     import { formatWorkFacts, formatWorkRange } from "~/utils/workFormat";
 
     // /work/<slug>: one entry. The long copy is plain text from admin;
@@ -42,6 +43,8 @@
             })
     );
 
+    const pendingLinks = computed(() => pendingWorkLinksFor(work.value?.slug));
+
     const hostOf = (url: string) => {
         try {
             return new URL(url).host.replace(/^www\./, "");
@@ -78,8 +81,8 @@
                 </ul>
                 <p v-else>{{ block.text }}</p>
             </template>
-            <ul v-if="work.links?.length" class="page-pills">
-                <li v-for="(link, i) in work.links" :key="link.url">
+            <ul v-if="work.links?.length || pendingLinks.length" class="page-pills">
+                <li v-for="(link, i) in work.links ?? []" :key="link.url">
                     <a
                         class="page-pill"
                         :class="{ 'page-pill--quiet': i > 0 }"
@@ -89,6 +92,19 @@
                         >{{ link.label || hostOf(link.url)
                         }}<LetterIcon :icon="faArrowUpRightFromSquare"
                     /></a>
+                </li>
+                <li v-for="pending in pendingLinks" :key="pending.label">
+                    <a
+                        v-if="pending.url"
+                        class="page-pill page-pill--quiet"
+                        :href="pending.url"
+                        target="_blank"
+                        rel="noopener"
+                        >{{ pending.label }}<LetterIcon :icon="faArrowUpRightFromSquare"
+                    /></a>
+                    <span v-else class="page-pill page-pill--quiet page-pill--label">{{
+                        pending.label
+                    }}</span>
                 </li>
             </ul>
         </article>

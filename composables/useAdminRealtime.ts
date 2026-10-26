@@ -7,12 +7,10 @@
 // edit every document the site stores.
 //
 // Lifecycle mirrors the public composable family:
-//   1. Initial fetch via the admin server endpoint
-//      (`/api/admin/content/{collection}`) — same call AdminCollectionList
-//      used pre-realtime, same admin token, same server-side sort. Search
-//      engines never reach /admin (it's middleware-gated), but the server
-//      fetch still gives us a deterministic first paint and avoids the
-//      "snapshot fires before auth is ready" race.
+//   1. Initial fetch via the Firestore client (`api.listCollection`, or
+//      `initialFetchFn` for messages). Search engines never reach /admin
+//      (it's middleware-gated). The fetch gives a deterministic first
+//      paint and avoids the "snapshot fires before auth is ready" race.
 //   2. Client takeover via `onSnapshot` once the user is authenticated.
 //      Wrapped in `whenIdle()` so the firestore SDK chunk download
 //      doesn't compete with the editor's first paint.
@@ -87,9 +85,9 @@ interface AdminListSnapshotOpts<T> {
     initial?: () => Array<T & { id: string }> | undefined;
     /**
      * Custom initial-fetch function for collections not in
-     * ALLOWED_CONTENT_COLLECTIONS (e.g. "messages" which has its own
-     * dedicated endpoint). When provided, replaces the default
-     * `api.listCollection()` call during the initial paint fetch.
+     * ALLOWED_CONTENT_COLLECTIONS (messages uses a Firestore query
+     * ordered by createdAt, not `api.listCollection()`). When provided,
+     * replaces the default list call during the initial paint fetch.
      */
     initialFetchFn?: () => Promise<Array<T & { id: string }>>;
 }

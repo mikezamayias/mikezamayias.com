@@ -7,6 +7,7 @@
         faCopy,
         faEnvelope,
         faFeather,
+        faGauge,
         faPenNib,
         faPersonRunning,
         faTerminal,
@@ -19,6 +20,7 @@
     import LetterNote from "~/components/letter/LetterNote.vue";
     import LetterSignature from "~/components/letter/LetterSignature.vue";
     import { formatPostDate } from "~/utils/dateFormat";
+    import { pendingWorkLinksFor } from "~/utils/pendingWorkLinks";
     import { formatWorkFacts } from "~/utils/workFormat";
 
     // The home page is a signed letter. Its sentences live in
@@ -56,6 +58,7 @@
 
     const workChips: WorkChip[] = [
         { slot: "healpen", slug: "healpen", icon: faFeather, name: "Healpen" },
+        { slot: "headspare", slug: "headspare", icon: faGauge, name: "Headspare" },
         { slot: "peakward", slug: "peakward", icon: faPersonRunning, name: "Peakward" },
         { slot: "noima", slug: "noima", icon: faBrain, name: "Noima" },
         { slot: "famon", slug: "famon", icon: faTerminal, name: "famon" },
@@ -69,7 +72,7 @@
         },
     ];
     const workParagraphs = [
-        { key: "letter.apps", slots: ["healpen", "peakward", "noima"] },
+        { key: "letter.apps", slots: ["healpen", "headspare", "peakward", "noima"] },
         { key: "letter.tools", slots: ["famon", "efimeries", "site"] },
     ];
 
@@ -178,6 +181,11 @@
                                 chipBySlot.get(slot)!.label ?? chipBySlot.get(slot)!.name
                             }}</template>
                         </template>
+                        <template #headspareSite>
+                            <a href="https://headspare.app" target="_blank" rel="noopener"
+                                >headspare.app</a
+                            >
+                        </template>
                     </i18n-t>
                     <template v-for="slot in para.slots" :key="`note-${slot}`">
                         <LetterNote
@@ -202,6 +210,21 @@
                                 >{{ link.label || hostOf(link.url)
                                 }}<LetterIcon :icon="faArrowUpRightFromSquare"
                             /></a>
+                            <template
+                                v-for="pending in pendingWorkLinksFor(chipBySlot.get(slot)!.slug)"
+                                :key="pending.label"
+                            >
+                                <a
+                                    v-if="pending.url"
+                                    class="note-go"
+                                    :href="pending.url"
+                                    target="_blank"
+                                    rel="noopener"
+                                    >{{ pending.label
+                                    }}<LetterIcon :icon="faArrowUpRightFromSquare"
+                                /></a>
+                                <span v-else class="note-go">{{ pending.label }}</span>
+                            </template>
                             <NuxtLink
                                 class="note-go"
                                 :to="localePath(`/work/${chipBySlot.get(slot)!.slug}`)"

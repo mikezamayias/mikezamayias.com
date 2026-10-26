@@ -6,6 +6,12 @@ import { getAdminFirestore } from "~/utils/adminFirestore";
 
 type AdminFetchOptions = NonNullable<Parameters<typeof $fetch>[1]>;
 
+/** Match server/api/admin/messages: default 50, cap 100. */
+function messageQueryLimit(raw: number): number {
+    if (!Number.isFinite(raw) || raw < 1) return 50;
+    return Math.min(100, Math.floor(raw));
+}
+
 export interface AdminMessage {
     id: string;
     name: string;
@@ -380,17 +386,34 @@ export const useAdminApi = () => {
         optimisticSave,
         getSingleton,
         saveSingleton,
-        listMessages: (limit = 50) =>
-            adminFetch<AdminMessage[]>("/api/admin/messages", {
-                query: { limit },
-            }),
-        updateMessage: (id: string, read: boolean) =>
-            adminFetch<{ success: boolean; id: string }>(
-                `/api/admin/messages/${encodeURIComponent(id)}`,
-                {
-                    method: "PATCH",
-                    body: { read },
-                }
-            ),
+        // Firestore client, not `/api/admin/messages`. Production is the
+        // static Worker (`bun run generate`); Nitro routes are not in that
+        // bundle, so the old fetch 404s. Rules already allow an allowlisted
+        // admin to list and update `/messages/{id}`.
+        listMessages: async (limitCount = 50) => {
+            const db = await getAdminFirestore();
+            const sdk = await import("firebase/firestore");
+            const cap = messageQueryLimit(limitCount);
+            const snap = await sdk.getDocs(
+                sdk.query(
+                    sdk.collection(db, "messages"),
+                    sdk.orderBy("createdAt", "desc"),
+                    sdk.limit(cap)
+                )
+            );
+            return snap.docs.map((row) => ({
+                id: row.id,
+                ...(row.data() as Omit<AdminMessage, "id">),
+            }));
+        },
+        updateMessage: async (id: string, read: boolean) => {
+            const db = await getAdminFirestore();
+            const sdk = await import("firebase/firestore");
+            await sdk.updateDoc(sdk.doc(db, "messages", id), {
+                read,
+                updatedAt: sdk.serverTimestamp(),
+            });
+            return { success: true, id };
+        },
     };
 };
