@@ -12,7 +12,7 @@
         "locale": {
             "en": {
                 "name": "Healpen",
-                "desc": "A journaling app based on expressive writing. Entries are encrypted on the phone before they sync.",
+                "desc": "A journaling app based on expressive writing. Entries are encrypted on the phone before they sync. Version 1.12.0 went to Google Play internal testing on 26 October 2026.",
                 "long": "- Works offline and syncs in the background\n- Entries are encrypted on the device with AES-GCM\n- Sentiment scoring on each entry\n- Onboarding animations in Rive\n- Releases through GitHub Actions"
             }
         },
@@ -21,6 +21,37 @@
                 "kind": "appstore",
                 "url": "https://testflight.apple.com/join/qBYPPDhN",
                 "label": "Join the TestFlight beta"
+            }
+        ],
+        "_playStore": "TODO(healpen-play): no public Play URL yet. The label lives in utils/pendingWorkLinks.ts. Do not add an internal-testing opt-in URL. Listing checked 26 Oct 2026 (404): https://play.google.com/store/apps/details?id=com.mikezamayias.healpen"
+    },
+    {
+        "slug": "headspare",
+        "start": "2026-10",
+        "stack": [],
+        "platform": "Mac",
+        "status": "building",
+        "glyph": "Hs",
+        "order": 1,
+        "published": true,
+        "locales_available": ["en"],
+        "locale": {
+            "en": {
+                "name": "Headspare",
+                "desc": "Headspare ranks your AI usage limits by what runs out first and gives each a pace verdict. Coming soon to Mac, iPhone and Android. Join the waitlist.",
+                "long": "The site went up on 26 October 2026. The waitlist is double opt-in: nothing is added until you tap the link in the email. Nothing is available to download yet. The social handle is @headspareapp. The name may still change."
+            }
+        },
+        "links": [
+            {
+                "kind": "live",
+                "url": "https://headspare.app",
+                "label": "headspare.app"
+            },
+            {
+                "kind": "other",
+                "url": "https://x.com/headspareapp",
+                "label": "@headspareapp"
             }
         ]
     },
