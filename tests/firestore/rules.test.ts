@@ -176,6 +176,29 @@ describe("firestore rules — messages (rev 1.6 Plan E gate)", () => {
         const anon = env.unauthenticatedContext().firestore();
         await assertFails(setDoc(doc(anon, "messages/m1"), { from: "test" }));
     });
+
+    it("admin can list messages and mark one read", async () => {
+        await env.withSecurityRulesDisabled(async (ctx) => {
+            await setDoc(doc(ctx.firestore(), "messages/m1"), {
+                name: "Ada",
+                email: "ada@example.com",
+                message: "Hello",
+                read: false,
+                createdAt: new Date("2026-10-01"),
+            });
+        });
+        const admin = env.authenticatedContext(ADMIN_UID).firestore();
+        const snap = await assertSucceeds(
+            getDocs(query(collection(admin, "messages"), limit(100)))
+        );
+        expect(snap.docs.map((row) => row.id)).toEqual(["m1"]);
+        await assertSucceeds(
+            updateDoc(doc(admin, "messages/m1"), {
+                read: true,
+                updatedAt: serverTimestamp(),
+            })
+        );
+    });
 });
 
 describe("firestore rules — profile (admin-only)", () => {
@@ -501,6 +524,113 @@ describe("firestore rules — production shape and affectedKeys allowlist", () =
                 order: 3,
                 updatedAt: serverTimestamp(),
                 unauthorizedKey: "malicious",
+            })
+        );
+    });
+
+    it("admin can create the work document the admin form sends", async () => {
+        const admin = env.authenticatedContext(ADMIN_UID).firestore();
+        // Shape of a new Headspare entry: start/end, status (including
+        // `building`), platform, tag stack, links, images, serverTimestamp.
+        await assertSucceeds(
+            setDoc(doc(admin, "work/headspare"), {
+                slug: "headspare",
+                start: "2026-10",
+                stack: [],
+                platform: "Mac",
+                status: "building",
+                glyph: "Hs",
+                order: 1,
+                published: true,
+                locales_available: ["en"],
+                locale: {
+                    en: {
+                        name: "Headspare",
+                        desc: "Waitlist",
+                        long: "The site went up on 26 October 2026.",
+                    },
+                },
+                links: [
+                    {
+                        kind: "live",
+                        url: "https://headspare.app",
+                        label: "headspare.app",
+                    },
+                ],
+                images: [],
+                updatedAt: serverTimestamp(),
+            })
+        );
+    });
+
+    it("admin can add start, end, status, and platform onto an existing work doc", async () => {
+        await env.withSecurityRulesDisabled(async (ctx) => {
+            await setDoc(doc(ctx.firestore(), "work/healpen"), {
+                slug: "healpen",
+                yr: "2024",
+                stack: "Flutter",
+                glyph: "H",
+                order: 0,
+                published: true,
+                locales_available: ["en"],
+                locale: { en: { name: "Healpen", desc: "Old", long: "" } },
+                links: [],
+                createdAt: new Date("2024-01-01"),
+                updatedAt: new Date("2024-01-02"),
+            });
+        });
+        const admin = env.authenticatedContext(ADMIN_UID).firestore();
+        await assertSucceeds(
+            setDoc(
+                doc(admin, "work/healpen"),
+                {
+                    slug: "healpen",
+                    start: "2024-01",
+                    end: "2026-10",
+                    stack: ["flutter", "openai"],
+                    platform: "iOS",
+                    status: "testing",
+                    glyph: "H",
+                    order: 0,
+                    published: true,
+                    locales_available: ["en", "el"],
+                    locale: {
+                        en: {
+                            name: "Healpen",
+                            desc: "Version 1.12.0 went to Google Play internal testing.",
+                            long: "Encrypted on the device.",
+                        },
+                    },
+                    links: [
+                        {
+                            kind: "appstore",
+                            url: "https://testflight.apple.com/join/qBYPPDhN",
+                            label: "Join the TestFlight beta",
+                        },
+                    ],
+                    images: [],
+                    updatedAt: serverTimestamp(),
+                },
+                { merge: true }
+            )
+        );
+        const saved = await getDoc(doc(admin, "work/healpen"));
+        expect(saved.data()?.status).toBe("testing");
+        expect(saved.data()?.platform).toBe("iOS");
+        expect(saved.data()?.start).toBe("2024-01");
+        expect(saved.data()?.yr).toBe("2024");
+    });
+
+    it("admin still cannot write a work key outside the allow-list", async () => {
+        const admin = env.authenticatedContext(ADMIN_UID).firestore();
+        await assertFails(
+            setDoc(doc(admin, "work/headspare-extra"), {
+                slug: "headspare-extra",
+                status: "building",
+                start: "2026-10",
+                published: false,
+                updatedAt: serverTimestamp(),
+                _playStore: "not a form field",
             })
         );
     });

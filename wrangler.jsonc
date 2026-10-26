@@ -17,10 +17,15 @@
     "name": "personal-website-v1",
     "account_id": "e2307e8414d6358345df0c4fa290ba08",
     "compatibility_date": "2026-06-20",
-    // The Worker exists for exactly one route (POST /api/contact).
-    // `run_worker_first` is left at its default false so asset requests never invoke it.
-    // Everything the Worker does see is handed straight back to the assets binding so
-    // `not_found_handling` and `html_handling` keep working.
+    // POST /api/contact is handled in the Worker. Dynamic admin URLs
+    // (`/admin/work/<slug>`) are not prerendered. With compatibility_date
+    // >= 2025-04-01, a browser navigation (Sec-Fetch-Mode: navigate) that
+    // misses an asset is served 404.html and never invokes the Worker, so
+    // the /admin shell fallback in worker/index.ts would not run.
+    // `run_worker_first` opts those paths out of that shortcut. Static
+    // admin pages still come from ASSETS inside the Worker (status 200).
+    // `/api/*` is intentionally absent: contact is not an asset, so the
+    // Worker already runs for it, and a site-wide API opt-in is not needed.
     "main": "worker/index.ts",
     // `html_handling` was unset, so it defaulted to "auto-trailing-slash".
     // Every prerendered route is a directory (`work/index.html`), so `/work`
@@ -34,6 +39,7 @@
         "directory": ".output/public",
         "not_found_handling": "404-page",
         "html_handling": "drop-trailing-slash",
+        "run_worker_first": ["/admin/*"],
     },
     "routes": [
         { "pattern": "mikezamayias.com/*", "zone_name": "mikezamayias.com" },

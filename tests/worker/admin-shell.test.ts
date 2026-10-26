@@ -1,6 +1,16 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import worker, { isAdminPath } from "../../worker/index";
 import { isAdminPath as isAdminPathFromRouting } from "../../worker/routing";
+
+describe("wrangler admin routing", () => {
+    it("invokes the worker before the 404 page for /admin/* navigations", () => {
+        const source = readFileSync(resolve(__dirname, "../../wrangler.jsonc"), "utf8");
+        expect(source).toMatch(/"run_worker_first"\s*:\s*\[[\s\S]*"\/admin\/\*"/);
+        expect(source).toMatch(/"not_found_handling"\s*:\s*"404-page"/);
+    });
+});
 
 describe("isAdminPath", () => {
     it("returns true for exact /admin", () => {
