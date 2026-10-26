@@ -273,6 +273,14 @@ body.letter-body {
     border-color: var(--letter-outline);
     color: var(--letter-text);
 }
+.page-frame .page-pill--label {
+    cursor: default;
+}
+.page-frame .page-pill--label:hover {
+    background: none;
+    color: var(--letter-text);
+    box-shadow: none;
+}
 .page-frame .page-pill .letter-icon {
     width: 0.95em;
     height: 0.95em;
