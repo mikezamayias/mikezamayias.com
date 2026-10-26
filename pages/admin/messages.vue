@@ -70,8 +70,9 @@
     // `createdAt desc` so an incoming contact-form submission (Plan E
     // Cloud Function writes the doc server-side after App Check
     // verification) lands at the top of the list within ~1 s without
-    // a refresh. Uses `initialFetchFn` because "messages" is not in
-    // ALLOWED_CONTENT_COLLECTIONS — it has a dedicated endpoint.
+    // a refresh. The first paint uses the same Firestore query. Messages
+    // are not in ALLOWED_CONTENT_COLLECTIONS, and the Nitro
+    // `/api/admin/messages` route is not part of the static Worker.
     const snapshot = useAdminListSnapshot<Omit<AdminMessage, "id">>({
         collection: "messages",
         orderBy: [{ field: "createdAt", direction: "desc" }],

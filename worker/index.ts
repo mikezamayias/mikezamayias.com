@@ -166,8 +166,12 @@ export default {
         // Serving the /admin root shell lets vue-router resolve the id client-side.
         // Scoping to /admin keeps every other unknown URL on the real 404 page.
         // Only GET falls back; a POST to an admin path keeps its 404.
-        // The admin shell being reachable by anonymous visitors is accepted here
-        // because the bundle was always public and the edge gate arrives in Phase 5.
+        // This branch only runs when the Worker is invoked. Browser navigations
+        // miss it unless wrangler.jsonc `run_worker_first` includes `/admin/*`
+        // (compatibility_date >= 2025-04-01 serves 404.html for navigations
+        // before the Worker). The admin shell being reachable by anonymous
+        // visitors is accepted here because the bundle was always public and
+        // the edge gate arrives in Phase 5.
         if (assetResponse.status === 404 && isAdminPath(url.pathname) && request.method === "GET") {
             return env.ASSETS.fetch(new Request(new URL("/admin", request.url), request));
         }
