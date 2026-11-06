@@ -468,7 +468,7 @@ jobs:
             - name: Deploy Preview to Firebase
               id: deploy
               if: steps.creds.outputs.present == 'true'
-              uses: FirebaseExtended/action-hosting-deploy@e2eda2e106cfa35cdbcf4ac9ddaf6c4756df2c8c # v0
+              uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0
               with:
                   repoToken: ${{ secrets.GITHUB_TOKEN }}
                   firebaseServiceAccount: ${{ steps.creds.outputs.json }}
