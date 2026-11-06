@@ -35,7 +35,7 @@ jobs:
             url: https://mikezamayias.com
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
@@ -195,7 +195,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
@@ -218,7 +218,7 @@ jobs:
         needs: rules
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
@@ -281,7 +281,7 @@ jobs:
             version_id: ${{ steps.worker_deploy.outputs.version_id }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Setup toolchain
               uses: ./.github/actions/setup-bun
@@ -371,7 +371,7 @@ jobs:
         needs: [build-and-deploy, deploy-worker]
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v7
 
             - name: Install SOPS
               run: |
