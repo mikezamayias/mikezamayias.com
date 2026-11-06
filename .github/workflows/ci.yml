@@ -315,7 +315,7 @@ jobs:
             - name: Download Build Artifact
               id: build-artifact
               continue-on-error: true
-              uses: actions/download-artifact@v5
+              uses: actions/download-artifact@v8
               with:
                   name: build-output
                   path: .output
@@ -418,7 +418,7 @@ jobs:
             - name: Download Build Artifact
               id: build-artifact
               continue-on-error: true
-              uses: actions/download-artifact@v5
+              uses: actions/download-artifact@v8
               with:
                   name: build-output
                   path: .output
