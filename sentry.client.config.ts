@@ -19,4 +19,7 @@ Sentry.init({
     // Drop the noisy Firestore "permission-denied" surfaces from the public site
     // — they're expected when the user hits an admin-only doc by URL fuzzing.
     ignoreErrors: [/FirebaseError: \[code=permission-denied\]/],
+    // Instagram and Facebook in-app browsers inject `iabjs://` scripts. Their
+    // errors (e.g. "Java object is gone" when the WebView closes) are not ours.
+    denyUrls: [/^iabjs:\/\//],
 });
